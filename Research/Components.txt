@@ -1,0 +1,21 @@
+IR
+    SFH4545 (Emitter)
+    TEFT 4300 (Reciever)
+
+IMU
+    LY3200ALH
+
+Motor & Driver
+    TC44278MSOP
+    zxmhc3f381n8tc
+    Faulhaber 1717T012SR
+
+Encoders
+
+Display
+    HCMS-2903
+
+Power ICs
+    TPS76850 (5V)
+    TPS73633 (3V3)
+    AMS1117 (3V3)
