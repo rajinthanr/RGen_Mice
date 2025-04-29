@@ -1,28 +1,61 @@
+MCU
+    *stm32f405
+        -have enough pins and speed for our micromouse
+        -no builtin Wireless debugging options available
+        -reliable
+        -IDE -> stm32CubeIDE
+
+    esp32s3
+        -pins are limited
+        -builtin BT&WiFi available for debugging
+        -IDE -> esp-idf & ArduinoIDE
+
 IR
     Emitter
-        SFH4545  (Half angle = 5°)
+        *SFH4545  (Half angle = 5°)
     Recievers
-        TPS601A  (Angle of Half Sensitivity= ±10°)  - many japanese mice used this one but it's been discontinued now
+        TPS601A  (Angle of Half Sensitivity= ±10°) - many japanese mice used this one but it's been discontinued now
         LTR4206E (Angle of Half Sensitivity= ±20°)
-        TEFT4300 (Angle of Half Sensitivity= ±30°)
+        *TEFT4300 (Angle of Half Sensitivity= ±30°) - commonly used one
 
 IMU
-    LY3200ALH (Analog Gyro - Single Axis - Rate noise density 0.074 dps/√Hz)
-    ICM-20948 (9-Axis)
+    LY3200ALH (Analog Gyro - Single Axis - Rate noise density 0.074 dps/√Hz) - too old, noisy
+    ICM-20948 (9-Axis) - bit harder to implement on stm32
+    ADXRS642
+    ADXRS300 and ADXRS610
+    *ASM330LHH (2020 by ST Microelectronics) - 3kHz sampling rate & reliable
 
 Motor Driver
     TC4427 (Mosfet Driver)
-    zxmhc3f381n8tc (Mosfet H-Bridge) - high current rating but bit harder to use
-    DRV8833 (1.5A) - easy to use and compact
+    zxmhc3f381n8tc (3A Mosfet H-Bridge) - high current rating but bit harder to use
+    *DRV8833 (1.5A) - easy to use and compact
     TB67H420FTG (9.0A) - overkill for our mouse and too many pins to solder
     Faulhaber 1717T012SR
 
+Motors
+    N20 Motors with magnetic encoders
+        -Builtin encoders
+        -cheaper
+        -not accurate
+
+    Faulhaber
+        -Builtin encoders
+        -too expensive
+        -much accurate
+    
+    Steppers
+        -Too bulky and power hungry
+        -too slow for micromouse
+
 Encoders
+    It's better to use builtin encoders
 
 Display
-    HCMS-2903
+    HCMS-2903 - speed and compact but no of characters are limited
+    *SSD1306 (0.96" OLED) - has enough display area for all the settings
+    SSD1306 (0.91" OLED) - this is also enoug and compact
 
 Power ICs
-    TPS76850 (5V)
-    TPS73633 (3V3)
-    AMS1117 (3V3)
+    *TPS76850 (5V 1A) - low dropout (230mV)
+    *TPS73633 (3V3 400mA) - low dropout (76mV)
+    AMS1117 (3V3 800mA) - Dropout voltage is high (1V)
