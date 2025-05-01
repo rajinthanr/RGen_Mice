@@ -20,7 +20,9 @@ IR
 
 IMU
     LY3200ALH (Analog Gyro - Single Axis - Rate noise density 0.074 dps/√Hz) - too old, noisy
-    ICM-20948 (9-Axis) - bit harder to implement on stm32
+    ICM-20948 (9-Axis) - good one
+    ICM-42688
+    ICM-45686
     ADXRS642
     ADXRS300 and ADXRS610
     *ASM330LHH (2020 by ST Microelectronics) - 3kHz sampling rate & reliable
@@ -33,19 +35,28 @@ Motor Driver
     Faulhaber 1717T012SR
 
 Motors
-    N20 Motors with magnetic encoders
-        -Builtin encoders
-        -cheaper
+    N20 geared Motors with magnetic encoders
+        +Builtin encoders
+        +cheaper
         -not accurate
+        -not small enough
 
     Faulhaber
-        -Builtin encoders
+        +Builtin encoders
         -too expensive
-        -much accurate
+        +much accurate
+        +Reliable
     
     Steppers
         -Too bulky and power hungry
         -too slow for micromouse
+        +Higer Accuracy
+
+    *Coreless Motor 1215 with quadrature magnetic encoders
+        +Builtin encoders
+        +cheaper
+        +smaller
+        -not reliable (but enough for our purpose)
 
 Encoders
     It's better to use builtin encoders
