@@ -1,14 +1,14 @@
 MCU
     *stm32f405
-        -have enough pins and speed for our micromouse
+        +have enough pins and speed for our micromouse
         -no builtin Wireless debugging options available
-        -reliable
-        -IDE -> stm32CubeIDE
+        +reliable
+        IDE -> stm32CubeIDE
 
     esp32s3
         -pins are limited
-        -builtin BT&WiFi available for debugging
-        -IDE -> esp-idf & ArduinoIDE
+        +builtin BT&WiFi available for debugging
+        IDE -> esp-idf & ArduinoIDE
 
 IR
     Emitter
@@ -20,12 +20,12 @@ IR
 
 IMU
     LY3200ALH (Analog Gyro - Single Axis - Rate noise density 0.074 dps/√Hz) - too old, noisy
-    ICM-20948 (9-Axis) - good one
-    ICM-42688
+    (+)ICM-20948 (9-Axis) - good one
+    (+)ICM-42688
     ICM-45686
     ADXRS642
     ADXRS300 and ADXRS610
-    *ASM330LHH (2020 by ST Microelectronics) - 3kHz sampling rate & reliable
+    (*)ASM330LHH (2020 by ST Microelectronics) - 3kHz sampling rate & reliable
 
 Motor Driver
     TC4427 (Mosfet Driver)

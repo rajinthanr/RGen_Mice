@@ -1,0 +1,27 @@
+Encoder Step Calculation for my drive system design
+
+1. Wheel Circumference
+-----------------------
+Wheel Diameter = 21 mm
+Circumference = π × diameter
+              ≈ 3.1416 × 21
+              ≈ 65.97 mm
+
+2. Effective Counts per Wheel Revolution
+-----------------------------------------
+Encoder PPR (Pulses Per Revolution) = 10
+Quadrature Decoding Mode = 4x
+→ Counts per motor revolution = 10 × 4 = 40
+
+Gear Ratio = 6.1
+→ Motor spins 6.1 times for one full wheel revolution
+→ Counts per wheel revolution = 40 × 6.1 = 244
+
+3. Millimeters per Encoder Step
+-------------------------------
+mm per step = Wheel Circumference / Counts per wheel revolution
+            = 65.97 mm / 244
+            ≈ 0.2704 mm/step (good enough)
+
+Conclusion:
+-----------
