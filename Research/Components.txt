@@ -69,3 +69,4 @@ Power ICs
     *TPS76850 (5V 1A) - low dropout (230mV)
     *TPS73633 (3V3 400mA) - low dropout (76mV)
     AMS1117 (3V3 800mA) - Dropout voltage is high (1V)
+    
