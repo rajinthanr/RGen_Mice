@@ -107,9 +107,10 @@ Designed using **Easy EDA** - free tool for beginners, our custom 2-layer PCB in
 - Motor drivers (DRV8833)
 - Programming header (SWD)
 
-|Design|Soldered|
-|----|----|
-|![PCB Layout](Images/PCB_1.png)|![PCB Layout](Images/PCB_2.jpeg)|
+| Design | Soldered |
+|--------|----------|
+| <img src="Images/PCB_1.png" height="600"/> | <img src="Images/PCB_2.jpeg" height="600"/> |
+
 
 ```bash
 # PCB files and Gerbers:
