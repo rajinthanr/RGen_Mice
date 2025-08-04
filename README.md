@@ -71,7 +71,7 @@ Every part was chosen with precision to balance performance, weight, and efficie
 - Lightweight 3D printable chassis
 - Wheel size, placement optimized for turn radius
 
-![Chassis render](images/design.jpg)
+![Chassis render](Images/Design.png)
 
 > 💡 *Includes STL files for all parts in the `Design/` folder.*
 
