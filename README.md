@@ -57,12 +57,13 @@ Every part was chosen with precision to balance performance, weight, and efficie
 | Component | Description | Datasheet |
 |----------|-------------|-----------|
 | MCU | STM32F405 (ARM Cortex-M4) | [Datasheet](https://www.st.com/resource/en/datasheet/dm00037051.pdf) |
-| Motors | Coreless Motor 1215 with quadrature magnetic encoders | [Link](//) |
+| Motors | Coreless Motor 1215 with quadrature magnetic encoders | [Datasheet](//) |
 | Encoders | Builtin quadrature magnetic encoders | - |
 | IMU | ICM-42688 | [Datasheet](https://invensense.tdk.com/download-pdf/icm-42688-p-datasheet/) |
 | Sensors | TEFT4300 IR sensors | [Datasheet](https://www.digikey.com/en/products/detail/vishay-semiconductor-opto-division/TEFT4300/1681175) |
 | Power | 2S Li-po 250mAh | - |
 
+> 💡 *Includes All datasheets for all components in the `Research/Datasheets` folder.*
 ---
 
 ## 📐 Mechanical Design
