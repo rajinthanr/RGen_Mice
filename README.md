@@ -89,6 +89,12 @@ Every part was chosen with precision to balance performance, weight, and efficie
 - ✔️ PWM control through timer
 - ✔️ Slew rate limiter for smooth turns
 
+### Design Itterations
+
+|V1|V2|V3|
+|----|----|----|
+|![](Research/Progress/Prototype_V1_2.jpg)|![](Research/Progress/PrototypeV2_3.jpg)|![](Research/Progress/PrototypeV3_3.jpg)|
+
 ---
 
 ## 🔌 Electronics & PCB Design
@@ -101,7 +107,9 @@ Designed using **Easy EDA** - free tool for beginners, our custom 2-layer PCB in
 - Motor drivers (DRV8833)
 - Programming header (SWD)
 
-![PCB Layout](Images/PCB_1.png)
+|Design|Soldered|
+|----|----|
+|![PCB Layout](Images/PCB_1.png)|![PCB Layout](Images/PCB_2.jpeg)|
 
 ```bash
 # PCB files and Gerbers:
