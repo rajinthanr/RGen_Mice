@@ -63,7 +63,7 @@ Every part was chosen with precision to balance performance, weight, and efficie
 | Sensors | TEFT4300 IR sensors | [Datasheet](https://www.digikey.com/en/products/detail/vishay-semiconductor-opto-division/TEFT4300/1681175) |
 | Power | 2S Li-po 250mAh | - |
 
-> 💡 *Includes All datasheets for all components in the `Research/Datasheets` folder.*
+> 💡 *Includes datasheets for all components in the `Research/Datasheets` folder.*
 ---
 
 ## 📐 Mechanical Design
