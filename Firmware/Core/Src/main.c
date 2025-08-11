@@ -22,6 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "icm.h"
+#include "interface.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,6 +54,13 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+
+uint16_t acc_data_X;
+uint16_t acc_data_Y;
+uint16_t acc_data_Z;
+uint16_t gyro_data_X;
+uint16_t gyro_data_Y;
+uint16_t gyro_data_Z;
 
 /* USER CODE END PV */
 
@@ -109,6 +119,9 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  Interface_Init();
+  icm_initialize();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -116,6 +129,10 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	LED_On(2);
+	read_values();
+	LED_Blink(1, 100, 1);
+    //HAL_Delay(1000);
 
     /* USER CODE BEGIN 3 */
   }
