@@ -129,10 +129,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	LED_On(2);
-	read_values();
-	LED_Blink(1, 100, 1);
-    //HAL_Delay(1000);
 
     /* USER CODE BEGIN 3 */
   }
