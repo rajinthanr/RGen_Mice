@@ -2,7 +2,7 @@
 
 Welcome to the official repository of our **Open Source Micromouse** - a fast, intelligent, and compact maze-solving robot developed from scratch by [rajinthan](https://github.com/rajinthanr). This project aims to document every step of the design and development process, making it easy for students, hobbyists, and engineers to learn and contribute.
 
-![Micromouse Design](Images/Design.png)
+![Micromouse Design](Images/final.jpg)
 
 ---
 
