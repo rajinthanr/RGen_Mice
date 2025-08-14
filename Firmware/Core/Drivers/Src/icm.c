@@ -12,104 +12,143 @@ extern SPI_HandleTypeDef hspi3;
 
 uint8_t fifo_data[16];
 
-uint8_t  acc_data_X1;
-uint8_t  acc_data_X0;
-extern	uint16_t acc_data_X;
+uint8_t acc_data_X1;
+uint8_t acc_data_X0;
+extern uint16_t acc_data_X;
 
-uint8_t  acc_data_Y1;
-uint8_t  acc_data_Y0;
-extern	uint16_t acc_data_Y;
+uint8_t acc_data_Y1;
+uint8_t acc_data_Y0;
+extern uint16_t acc_data_Y;
 
-uint8_t  acc_data_Z1;
-uint8_t  acc_data_Z0;
-extern	uint16_t acc_data_Z;
+uint8_t acc_data_Z1;
+uint8_t acc_data_Z0;
+extern uint16_t acc_data_Z;
 
-uint8_t  gyro_data_X1;
-uint8_t  gyro_data_X0;
-extern	uint16_t gyro_data_X;
+uint8_t gyro_data_X1;
+uint8_t gyro_data_X0;
+extern uint16_t gyro_data_X;
 
-uint8_t  gyro_data_Y1;
-uint8_t  gyro_data_Y0;
-extern	uint16_t gyro_data_Y;
+uint8_t gyro_data_Y1;
+uint8_t gyro_data_Y0;
+extern uint16_t gyro_data_Y;
 
-uint8_t  gyro_data_Z1;
-uint8_t  gyro_data_Z0;
-extern	uint16_t gyro_data_Z;
+uint8_t gyro_data_Z1;
+uint8_t gyro_data_Z0;
+extern uint16_t gyro_data_Z;
 
+float acc_x_ms2;
+float acc_y_ms2;
+float acc_z_ms2;
 
-static void cs(int state) {
+// Gyroscope: convert raw values to rad/s (assuming ±2000 dps, 16-bit)
+// Sensitivity for ±2000 dps: 16.4 LSB/(°/s), 1 dps = 0.0174533 rad/s
+float gyro_x_rads;
+float gyro_y_rads;
+float gyro_z_rads;
+
+static void cs(int state)
+{
 	if (state)
 		HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_SET);
 	else
 		HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, GPIO_PIN_RESET);
 }
 
-
-
-void icm_initialize(){
+void icm_initialize()
+{
 	// Set CS high initially
 	cs(1);
 	uint8_t configure_reset = 0x01;
 	uint8_t fifo_conf_data = 0x03;
 	uint8_t buffer = 0x0F; //  temperature sensor enabled. RC oscillator is on, gyro and accelerometer low noise mode,
 	uint8_t init = 0x4E;
-    uint8_t init_state = 0x0F;
+	uint8_t init_state = 0x0F;
 
 	// Pull CS low to start SPI transaction
 	cs(0);
-	//HAL_SPI_Transmit(&hspi3, &configure_reset, 1, 100);
+	// HAL_SPI_Transmit(&hspi3, &configure_reset, 1, 100);
 	HAL_Delay(100);
-    //HAL_SPI_Transmit(&hspi3, &buffer, 1, 100);
+	// HAL_SPI_Transmit(&hspi3, &buffer, 1, 100);
+
+	uint16_t accel_fs_sel = 0x40; // ACCEL_CONFIG: FS_SEL=2 (±8g), bits [3:2]=10
+	uint16_t gyro_fs_sel = 0x40;  // GYRO_CONFIG: FS_SEL=2 (±1000 dps), bits [4:3]=10
+
+	// Write ACCEL_CONFIG register (address 0x14)
+	uint16_t accel_config_reg = 0x50;
+	cs(0);
+	HAL_SPI_Transmit(&hspi3, &accel_config_reg, 1, 100);
+	HAL_SPI_Transmit(&hspi3, &accel_fs_sel, 1, 100);
+	cs(1);
 	HAL_Delay(100);
+
+	// Write GYRO_CONFIG register (address 0x11)
+	uint16_t gyro_config_reg = 0x4F;
+	cs(0);
+	HAL_SPI_Transmit(&hspi3, &gyro_config_reg, 1, 100);
+	HAL_SPI_Transmit(&hspi3, &gyro_fs_sel, 1, 100);
+	cs(1);
+	HAL_Delay(100);
+	cs(0);
 	HAL_SPI_Transmit(&hspi3, &init, 1, 100);
-    HAL_SPI_Transmit(&hspi3, &init_state, 1, 100);
-	//HAL_SPI_Transmit(&hspi3, &fifo_conf_data, 1, 100);
+	HAL_Delay(100);
+	HAL_SPI_Transmit(&hspi3, &init_state, 1, 100);
+	cs(1);
+	// HAL_SPI_Transmit(&hspi3, &fifo_conf_data, 1, 100);
 	HAL_Delay(100);
 	// Pull CS high to end SPI transaction
+
+	uint8_t whoami_reg = 0x75 | 0x80; // WHO_AM_I register address with read bit set
+	uint8_t whoami_val = 0;
+	cs(0);
+	HAL_SPI_Transmit(&hspi3, &whoami_reg, 1, 100);
+	HAL_SPI_Receive(&hspi3, &whoami_val, 1, 100);
+	// Pull CS high to end SPI transaction
 	cs(1);
-    
-    uint8_t whoami_reg = 0x75 | 0x80; // WHO_AM_I register address with read bit set
-    uint8_t whoami_val = 0;
-    cs(0);
-    HAL_SPI_Transmit(&hspi3, &whoami_reg, 1, 100);
-    HAL_SPI_Receive(&hspi3, &whoami_val, 1, 100);
-    // Pull CS high to end SPI transaction
-    cs(1);
 }
 
-
-void read_values(){
+void read_values()
+{
 	// Pull CS low to start SPI transaction
 	cs(0);
-    uint8_t reg_addr = 0x1F | 0x80; // Register address with read bit set
-    HAL_SPI_Transmit(&hspi3, &reg_addr, 1, 100);
+	uint8_t reg_addr = 0x1F | 0x80; // Register address with read bit set
+	HAL_SPI_Transmit(&hspi3, &reg_addr, 1, 100);
 	HAL_SPI_Receive(&hspi3, fifo_data, 16, 100);
 	// Pull CS high to end SPI transaction
 	cs(1);
 
-	  acc_data_X1 = fifo_data[0];
-	  acc_data_X0 = fifo_data[1];
-	  acc_data_X = (acc_data_X1<<8) | acc_data_X0;
+	acc_data_X1 = fifo_data[0];
+	acc_data_X0 = fifo_data[1];
+	acc_data_X = (acc_data_X1 << 8) | acc_data_X0;
 
-	  acc_data_Y1 = fifo_data[2];
-	  acc_data_Y0 = fifo_data[3];
-	  acc_data_Y = (acc_data_Y1<<8) | acc_data_Y0;
+	acc_data_Y1 = fifo_data[2];
+	acc_data_Y0 = fifo_data[3];
+	acc_data_Y = (acc_data_Y1 << 8) | acc_data_Y0;
 
-	  acc_data_Z1 = fifo_data[4];
-	  acc_data_Z0 = fifo_data[5];
-	  acc_data_Z = (acc_data_Z1<<8) | acc_data_Z0;
+	acc_data_Z1 = fifo_data[4];
+	acc_data_Z0 = fifo_data[5];
+	acc_data_Z = (acc_data_Z1 << 8) | acc_data_Z0;
 
-	  gyro_data_X1 = fifo_data[6];
-	  gyro_data_X0 = fifo_data[7];
-	  gyro_data_X = (gyro_data_X1<<8) | gyro_data_X0;
+	gyro_data_X1 = fifo_data[6];
+	gyro_data_X0 = fifo_data[7];
+	gyro_data_X = (gyro_data_X1 << 8) | gyro_data_X0;
 
-	  gyro_data_Y1 = fifo_data[8];
-	  gyro_data_Y0 = fifo_data[9];
-	  gyro_data_Y = (gyro_data_Y1<<8) | gyro_data_Y0;
+	gyro_data_Y1 = fifo_data[8];
+	gyro_data_Y0 = fifo_data[9];
+	gyro_data_Y = (gyro_data_Y1 << 8) | gyro_data_Y0;
 
-	  gyro_data_Z1 = fifo_data[10];
-	  gyro_data_Z0 = fifo_data[11];
-	  gyro_data_Z = (gyro_data_Z1<<8) | gyro_data_Z0;
+	gyro_data_Z1 = fifo_data[10];
+	gyro_data_Z0 = fifo_data[11];
+	gyro_data_Z = (gyro_data_Z1 << 8) | gyro_data_Z0;
 
+	// Accelerometer: convert raw values to m/s^2 (assuming ±4g, 16-bit, 1g = 9.80665 m/s^2)
+	// Sensitivity for ±4g: 8192 LSB/g
+	acc_x_ms2 = ((int16_t)acc_data_X) * 9.80665f / 8192.0f;
+	acc_y_ms2 = ((int16_t)acc_data_Y) * 9.80665f / 8192.0f;
+	acc_z_ms2 = ((int16_t)acc_data_Z) * 9.80665f / 8192.0f;
 
+	// Gyroscope: convert raw values to dps (assuming ±500 dps, 16-bit)
+	// Sensitivity for ±500 dps: 65.5 LSB/(°/s)
+	gyro_x_rads = ((int16_t)gyro_data_X) / 65.5f;
+	gyro_y_rads = ((int16_t)gyro_data_Y) / 65.5f;
+	gyro_z_rads = ((int16_t)gyro_data_Z) / 65.5f;
 }
