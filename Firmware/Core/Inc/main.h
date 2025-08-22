@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -89,6 +89,7 @@ void Error_Handler(void);
 #define MOT_ENABLE_GPIO_Port GPIOB
 #define B_KEY_Pin GPIO_PIN_12
 #define B_KEY_GPIO_Port GPIOB
+#define B_KEY_EXTI_IRQn EXTI15_10_IRQn
 #define LED4_Pin GPIO_PIN_6
 #define LED4_GPIO_Port GPIOC
 #define LED3_Pin GPIO_PIN_7
@@ -111,6 +112,7 @@ void Error_Handler(void);
 #define TR_FL_GPIO_Port GPIOB
 #define B_BOOT_Pin GPIO_PIN_8
 #define B_BOOT_GPIO_Port GPIOB
+#define B_BOOT_EXTI_IRQn EXTI9_5_IRQn
 
 /* USER CODE BEGIN Private defines */
 

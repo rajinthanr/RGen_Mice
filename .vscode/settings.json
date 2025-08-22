@@ -1,7 +1,9 @@
 {
     "files.associations": {
+        "*.pynb": "python",
         "main.h": "c",
         "compare": "cpp",
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "unistd.h": "c"
     }
 }

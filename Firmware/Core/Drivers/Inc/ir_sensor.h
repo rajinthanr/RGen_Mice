@@ -24,8 +24,7 @@ extern "C"
 	uint16_t readADC(int8_t pin);
 	void delay(uint32_t ms);
 	void delayMicroseconds(uint32_t us);
-	uint64_t millis(void);
-	uint64_t micros(void);
+
 
 #ifdef __cplusplus
 }
