@@ -4,6 +4,12 @@
         "main.h": "c",
         "compare": "cpp",
         "cmath": "cpp",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "encoder.h": "c",
+        "sensor_function.h": "c",
+        "delay.h": "c",
+        "adc.h": "c",
+        "cstring": "cpp",
+        "icm.h": "c"
     }
 }

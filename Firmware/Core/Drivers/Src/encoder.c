@@ -1,55 +1,101 @@
 #include "stm32f4xx.h"
 #include "encoder.h"
 
-//PA0	TIM5_CH1	Encoder_R_CHA
-//PA1	TIM5_CH2	Encoder_R_CHB
+// PA0	TIM5_CH1	Encoder_R_CHA
+// PA1	TIM5_CH2	Encoder_R_CHB
 
-//PA15	TIM2_CH1	Encoder_L_CHA
-//PB3	TIM2_CH2	Encoder_L_CHB
+// PA15	TIM2_CH1	Encoder_L_CHA
+// PB3	TIM2_CH2	Encoder_L_CHB
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 
+#include <math.h>
+
+#define ENCODER_TICKS_PER_100MM 220.0f
+#define ENCODER_TICKS_PER_MM (ENCODER_TICKS_PER_100MM / 100.0f)
+#include "delay.h" // for micros()
+
+volatile int32_t left_enc_last = 0;
+volatile int32_t right_enc_last = 0;
+static uint32_t left_enc_last_time = 0;
+static uint32_t right_enc_last_time = 0;
+
+// Call this function periodically to get left wheel speed in mm/s
+float getLeftSpeed(void)
+{
+	int32_t current = getLeftEncCount();
+	uint32_t now = micros();
+	float dt_sec = (now - left_enc_last_time) / 1000000.0f;
+	int32_t ticks = current - left_enc_last;
+	left_enc_last = current;
+	left_enc_last_time = now;
+	float distance_mm = ticks / ENCODER_TICKS_PER_MM;
+	return (dt_sec > 0) ? (distance_mm / dt_sec) : 0.0f;
+}
+
+// Call this function periodically to get right wheel speed in mm/s
+float getRightSpeed(void)
+{
+	int32_t current = getRightEncCount();
+	uint32_t now = micros();
+	float dt_sec = (now - right_enc_last_time) / 1000000.0f;
+	int32_t ticks = current - right_enc_last;
+	right_enc_last = current;
+	right_enc_last_time = now;
+	float distance_mm = ticks / ENCODER_TICKS_PER_MM;
+	return (dt_sec > 0) ? (distance_mm / dt_sec) : 0.0f;
+}
 
 void Encoder_Configration(void)
 {
-	GPIO_InitTypeDef GPIO_InitStructure;
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM5|RCC_APB1Periph_TIM2, ENABLE);	
-	
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_15;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);	
-	
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_TIM5);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_TIM5);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource15, GPIO_AF_TIM2);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource3, GPIO_AF_TIM2);
-	
-    TIM_SetAutoreload (TIM5, 0xffffffff);//0xffffffff is the max value for 32 bit, the autoreload value will be 0xffff for 16 bit timer
-	TIM_SetAutoreload (TIM2, 0xffffffff);
-	/* Configure the encoder */
-	TIM_EncoderInterfaceConfig(TIM5, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);//rising rising or rising falling will help you to swithc the direction for encoder at quardrature mode
-	TIM_EncoderInterfaceConfig(TIM2, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Falling);//if the setting is rising rising and the encoder counts decreases when wheel spin forward, just change it to rising falling
-	/* TIM4 counter enable */
-	TIM_Cmd(TIM5, ENABLE);	
-	TIM_Cmd(TIM2, ENABLE);	
+	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
+	HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 }
 
-int32_t getRightEncCount(void) {
-	//return TIM_GetCounter(TIM5);
-	return TIM5->CNT;
+int32_t getRightEncCount(void)
+{
+	uint16_t count = TIM2->CNT;
+
+	static uint16_t pre_count = 0;
+	static int16_t round = 0;
+
+	if (abs(count - pre_count) > 50000)
+	{
+		if (count > 30000)
+			round--;
+		else
+			round++;
+	}
+
+	pre_count = count;
+	return -(round * 65536 + count);
 }
 
-void resetRightEncCount(void) {
-	TIM5->CNT = 0;
-}
-
-int32_t getLeftEncCount(void) {
-	//return TIM_GetCounter(TIM2);
-	return TIM2->CNT;
-}
-
-void resetLeftEncCount(void) {
+void resetRightEncCount(void)
+{
 	TIM2->CNT = 0;
 }
 
+int32_t getLeftEncCount(void)
+{
+	uint16_t count = TIM1->CNT;
+
+	static uint16_t pre_count = 0;
+	static int16_t round = 0;
+
+	if (abs(count - pre_count) > 50000)
+	{
+		if (count > 30000)
+			round--;
+		else
+			round++;
+	}
+
+	pre_count = count;
+	return (round * 65536 + count);
+}
+
+void resetLeftEncCount(void)
+{
+	TIM1->CNT = 0;
+}

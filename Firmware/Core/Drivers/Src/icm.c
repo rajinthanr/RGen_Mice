@@ -10,41 +10,47 @@
 
 extern SPI_HandleTypeDef hspi3;
 
+float acc_data_X;
+float acc_data_Y;
+float acc_data_Z;
+float gyro_data_X;
+float gyro_data_Y;
+float gyro_data_Z;
+
+float offset_acc_x = 0;
+float offset_acc_y = 0;
+float offset_acc_z = 0;
+float offset_gyro_x = 0;
+float offset_gyro_y = 0;
+float offset_gyro_z = 0;
+
 uint8_t fifo_data[16];
 
 uint8_t acc_data_X1;
 uint8_t acc_data_X0;
-extern uint16_t acc_data_X;
 
 uint8_t acc_data_Y1;
 uint8_t acc_data_Y0;
-extern uint16_t acc_data_Y;
 
 uint8_t acc_data_Z1;
 uint8_t acc_data_Z0;
-extern uint16_t acc_data_Z;
 
 uint8_t gyro_data_X1;
 uint8_t gyro_data_X0;
-extern uint16_t gyro_data_X;
 
 uint8_t gyro_data_Y1;
 uint8_t gyro_data_Y0;
-extern uint16_t gyro_data_Y;
 
 uint8_t gyro_data_Z1;
 uint8_t gyro_data_Z0;
-extern uint16_t gyro_data_Z;
 
 float acc_x_ms2;
 float acc_y_ms2;
 float acc_z_ms2;
 
-// Gyroscope: convert raw values to rad/s (assuming ±2000 dps, 16-bit)
-// Sensitivity for ±2000 dps: 16.4 LSB/(°/s), 1 dps = 0.0174533 rad/s
-float gyro_x_rads;
-float gyro_y_rads;
-float gyro_z_rads;
+float gyro_x_dps;
+float gyro_y_dps;
+float gyro_z_dps;
 
 static void cs(int state)
 {
@@ -71,7 +77,7 @@ void icm_initialize()
 	// HAL_SPI_Transmit(&hspi3, &buffer, 1, 100);
 
 	uint16_t accel_fs_sel = 0x40; // ACCEL_CONFIG: FS_SEL=2 (±8g), bits [3:2]=10
-	uint16_t gyro_fs_sel = 0x40;  // GYRO_CONFIG: FS_SEL=2 (±1000 dps), bits [4:3]=10
+	uint16_t gyro_fs_sel = 0x40;	// GYRO_CONFIG: FS_SEL=2 (±1000 dps), bits [4:3]=10
 
 	// Write ACCEL_CONFIG register (address 0x14)
 	uint16_t accel_config_reg = 0x50;
@@ -104,6 +110,37 @@ void icm_initialize()
 	HAL_SPI_Receive(&hspi3, &whoami_val, 1, 100);
 	// Pull CS high to end SPI transaction
 	cs(1);
+
+	float avg_acc_x = 0;
+	float avg_acc_y = 0;
+	float avg_acc_z = 0;
+	float avg_gyro_x = 0;
+	float avg_gyro_y = 0;
+	float avg_gyro_z = 0;
+
+	for (int i = 0; i < 1000; i++)
+	{
+		read_values();
+		avg_acc_x += acc_x_ms2;
+		avg_acc_y += acc_y_ms2;
+		avg_acc_z += acc_z_ms2;
+		avg_gyro_x += gyro_x_dps;
+		avg_gyro_y += gyro_y_dps;
+		avg_gyro_z += gyro_z_dps;
+	}
+	avg_acc_x /= 1000;
+	avg_acc_y /= 1000;
+	avg_acc_z /= 1000;
+	avg_gyro_x /= 1000;
+	avg_gyro_y /= 1000;
+	avg_gyro_z /= 1000;
+
+	offset_acc_x = avg_acc_x;
+	offset_acc_y = avg_acc_y;
+	offset_acc_z = avg_acc_z;
+	offset_gyro_x = avg_gyro_x;
+	offset_gyro_y = avg_gyro_y;
+	offset_gyro_z = avg_gyro_z;
 }
 
 void read_values()
@@ -148,7 +185,43 @@ void read_values()
 
 	// Gyroscope: convert raw values to dps (assuming ±500 dps, 16-bit)
 	// Sensitivity for ±500 dps: 65.5 LSB/(°/s)
-	gyro_x_rads = ((int16_t)gyro_data_X) / 65.5f;
-	gyro_y_rads = ((int16_t)gyro_data_Y) / 65.5f;
-	gyro_z_rads = ((int16_t)gyro_data_Z) / 65.5f;
+	gyro_x_dps = ((int16_t)gyro_data_X) / 65.5f;
+	gyro_y_dps = ((int16_t)gyro_data_Y) / 65.5f;
+	gyro_z_dps = ((int16_t)gyro_data_Z) / 65.5f;
+}
+
+float get_accY(){
+	uint8_t data[2];
+	cs(0);
+	uint8_t reg_addr = 0x21 | 0x80; // Register address with read bit set
+	HAL_SPI_Transmit(&hspi3, &reg_addr, 1, 100);
+	HAL_SPI_Receive(&hspi3, data, 2, 100);
+	// Pull CS high to end SPI transaction
+	cs(1);
+
+	acc_data_Y0 = data[0];
+	acc_data_Y1 = data[1];
+	acc_data_Y = (acc_data_Y1 << 8) | acc_data_Y0;
+
+	float val = ((int16_t)acc_data_Y) * 9.80665f / 8192.0f - offset_acc_y;
+	return val;
+}
+
+float get_gyroZ()
+{
+	// Pull CS low to start SPI transaction
+	uint8_t data[2];
+	cs(0);
+	uint8_t reg_addr = 0x29 | 0x80; // Register address with read bit set
+	HAL_SPI_Transmit(&hspi3, &reg_addr, 1, 100);
+	HAL_SPI_Receive(&hspi3, data, 2, 100);
+	// Pull CS high to end SPI transaction
+	cs(1);
+
+	gyro_data_Z1 = data[0];
+	gyro_data_Z0 = data[1];
+	gyro_data_Z = (gyro_data_Z1 << 8) | gyro_data_Z0;
+
+	float gyro_z_dps = ((int16_t)gyro_data_Z) / 65.5f;
+	return gyro_z_dps - offset_gyro_z;
 }
