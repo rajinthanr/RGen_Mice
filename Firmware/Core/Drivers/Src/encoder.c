@@ -1,5 +1,6 @@
 #include "stm32f4xx.h"
 #include "encoder.h"
+#include "core.h"
 
 // PA0	TIM5_CH1	Encoder_R_CHA
 // PA1	TIM5_CH2	Encoder_R_CHB
@@ -13,12 +14,56 @@ extern TIM_HandleTypeDef htim2;
 
 #define ENCODER_TICKS_PER_100MM 220.0f
 #define ENCODER_TICKS_PER_MM (ENCODER_TICKS_PER_100MM / 100.0f)
+#define MM_PER_COUNT_LEFT (100.0f / ENCODER_TICKS_PER_100MM)
+#define MM_PER_COUNT_RIGHT (100.0f / ENCODER_TICKS_PER_100MM)
 #include "delay.h" // for micros()
 
 volatile int32_t left_enc_last = 0;
 volatile int32_t right_enc_last = 0;
 static uint32_t left_enc_last_time = 0;
 static uint32_t right_enc_last_time = 0;
+
+float m_fwd_change = 0;
+float m_rot_change = 0;
+float m_robot_distance = 0;
+float m_robot_angle = 0;
+
+void update()
+{
+	int left_delta = 0;
+	int right_delta = 0;
+	left_delta = getLeftEncCount();
+	right_delta = getRightEncCount();
+
+	float left_change = left_delta * MM_PER_COUNT_LEFT;
+	float right_change = right_delta * MM_PER_COUNT_RIGHT;
+	m_fwd_change = 0.5 * (right_change + left_change);
+	m_robot_distance += m_fwd_change;
+	static float pre_angle = 0;
+	m_rot_change = angle - pre_angle;
+	m_robot_angle += m_rot_change;
+	pre_angle = angle;
+}
+
+float robot_distance()
+{
+	return m_robot_distance;
+}
+
+float robot_angle()
+{
+	return m_robot_angle;
+}
+
+float robot_fwd_change()
+{
+	return m_fwd_change;
+}
+
+float robot_rot_change()
+{
+	return m_rot_change;
+}
 
 // Call this function periodically to get left wheel speed in mm/s
 float getLeftSpeed(void)

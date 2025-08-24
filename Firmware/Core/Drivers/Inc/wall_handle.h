@@ -23,6 +23,7 @@ extern "C"
     float wallFront(int band);
     bool is_wall(int w);
     void wallFollow(bool include_left, bool include_right);
+    float clamp(float value, float min, float max);
 
 #ifdef __cplusplus
 }

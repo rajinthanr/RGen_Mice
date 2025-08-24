@@ -173,7 +173,7 @@ void wallFollow(bool include_left, bool include_right)
     else if (!is_wall(L) && !is_wall(R))
     {
         wall_state = 3;
-        drive_dif(mouse.max_linear_speed, mouse.max_linear_speed);
+        drive_set_closed_loop(mice.max_linear_speed, 0);
     }
 
     pre_wall_state = wall_state;
@@ -198,5 +198,5 @@ void wallFollow(bool include_left, bool include_right)
 
     float dif = wall_theta_pid.kp * error + wall_theta_pid.ki * wall_theta_pid.integral + wall_theta_pid.kd * derivative;
 
-    drive_set_closed_loop(mouse.max_linear_speed, dif);
+    drive_set_closed_loop(mice.max_linear_speed, dif);
 }

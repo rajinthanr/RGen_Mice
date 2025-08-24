@@ -146,13 +146,8 @@ int main(void)
   HAL_TIM_Base_Start(&htim10);
 
   drive_enable();
-  drive_dif(0.0f, 0.0f);
-  // drive_dif(1,0);
-  // drive_dif(0,1);
-  // drive_dif(1,1);
-  // drive_dif(0,0);
 
-  return core();
+  return core(); // core functionality is here :)
 
   /* USER CODE END 2 */
 
@@ -160,13 +155,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    left_enc = __HAL_TIM_GET_COUNTER(&htim1);
-    right_enc = __HAL_TIM_GET_COUNTER(&htim2);
-    read_values();
-    readSensor();
-
-    LED_Blink(1, 100, 1);
-    drive_dif(left_speed, right_speed);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -344,7 +332,7 @@ static void MX_SPI3_Init(void)
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;

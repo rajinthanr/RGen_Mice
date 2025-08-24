@@ -1,19 +1,21 @@
+
 #include "core.h"
-#include "main.h"
-#include "delay.h"
-#include "adc.h"
-#include "led.h"
-#include "sensor_Function.h"
-#include "encoder.h"
-#include "icm.h"
-#include "drive.h"
-#include "usart.h"
-#include <cstring>
-#include "flash.h"
-#include "wall_handle.h"
+#include "motion.h"
+#include "config.h"
+#include "sensors.h"
+#include "mouse.h"
 
 extern UART_HandleTypeDef huart1; // Change to your UART instance
 uint8_t is_run = 0;
+
+Motion motion;    // high level motion operations
+Motors motors;    // low level control for drive motors
+Profile forward;  // speed profiles for forward motion
+Profile rotation; // speed profiles for rotary motion
+Sensors sensors;
+Mouse mouse;
+
+bool systick_enable = 0;
 
 float left_measured;
 float right_measured;
@@ -24,7 +26,13 @@ bool is_wall_follow = 0;
 
 void systick(void)
 {
+	if(systick_enable){
+    update();
+    motion.update();
+    motors.update_controllers(motion.velocity(), motion.omega(), sensors.get_steering_feedback());
+	}
 }
+
 int core(void)
 {
     init_flash();
@@ -39,8 +47,6 @@ int core(void)
     //     usart1_Configuration(9600);
     //     SPI_Configuration();
     //     TIM4_PWM_Init();
-    char msg[] = "Hello via UART Interrupt!\r\n";
-    HAL_UART_Transmit_IT(&huart1, (uint8_t *)msg, strlen(msg));
     Encoder_Configration();
     //    buzzer_Configuration();
     ADC_Config();
@@ -50,10 +56,10 @@ int core(void)
     {
         LED1_ON;
         delay_ms(10);
+        // readSensor();
+        //   read_values();
         readSensor();
-        //  read_values();
-        readSensor();
-        readGyro();
+        //readGyro();
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
@@ -70,7 +76,8 @@ int core(void)
         //        delay_ms(1000);
         if (is_run)
         {
-            drive_set_closed_loop(mouse.max_linear_speed, mouse.max_angular_speed);
+            // drive_set_closed_loop(mice.max_linear_speed, mice.max_angular_speed);
+            mouse.turn_IP180();
         }
         if (is_calibrate)
         {
@@ -83,8 +90,9 @@ int core(void)
         }
         if (is_mouse_enable)
         {
-            drive_closed_loop_update();
-            // drive_dif(mouse.max_linear_speed/100,mouse.max_linear_speed/100);
+        	systick_enable=1;
+            //drive_closed_loop_update();
+            // drive_dif(mice.max_linear_speed/100,mice.max_linear_speed/100);
         }
         if (is_wall_follow)
         {

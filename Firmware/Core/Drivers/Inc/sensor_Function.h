@@ -23,6 +23,7 @@ extern "C"
     extern int32_t Outz;
     extern float aSpeed;
     extern float angle;
+    extern float battery_voltage;
 
     extern int reading[4];
     extern float dis_reading[4];

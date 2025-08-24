@@ -82,11 +82,11 @@ void debug()
         }
         else if (strcmp(command, "ml") == 0)
         {
-            mouse.max_linear_speed = value;
+            mice.max_linear_speed = value;
         }
         else if (strcmp(command, "ma") == 0)
         {
-            mouse.max_angular_speed = value;
+            mice.max_angular_speed = value;
         }
         // Add more commands as needed
     }

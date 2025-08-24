@@ -8,26 +8,26 @@ extern "C"
 {
 #endif
 
-typedef struct
-{
-    // Current state
-    float linear_speed;  // Current linear speed (mm/s)
-    float angular_speed; // Current angular speed (deg/s or rad/s)
+    typedef struct
+    {
+        // Current state
+        float linear_speed;  // Current linear speed (mm/s)
+        float angular_speed; // Current angular speed (deg/s or rad/s)
 
-    // Target state
-    float target_linear_speed;  // Target linear speed (mm/s)
-    float target_angular_speed; // Target angular speed (deg/s or rad/s)
+        // Target state
+        float target_linear_speed;  // Target linear speed (mm/s)
+        float target_angular_speed; // Target angular speed (deg/s or rad/s)
 
-    // Maximum limits
-    float max_linear_speed;  // Maximum linear speed (mm/s)
-    float max_angular_speed; // Maximum angular speed (deg/s or rad/s)
+        // Maximum limits
+        float max_linear_speed;  // Maximum linear speed (mm/s)
+        float max_angular_speed; // Maximum angular speed (deg/s or rad/s)
 
-    // Acceleration limits
-    float max_linear_accel;  // Maximum linear acceleration (mm/s^2)
-    float max_angular_accel; // Maximum angular acceleration (deg/s^2 or rad/s^2)
-} MouseMotionState;
+        // Acceleration limits
+        float max_linear_accel;  // Maximum linear acceleration (mm/s^2)
+        float max_angular_accel; // Maximum angular acceleration (deg/s^2 or rad/s^2)
+    } MouseMotionState;
 
-    extern MouseMotionState mouse;
+    extern MouseMotionState mice;
 
     // Legacy prototypes (not currently implemented in drive.cpp) -- consider removing or implementing
     void drive_init(void);                                 // TODO: implement or remove
@@ -42,6 +42,9 @@ typedef struct
 
     void drive_set_closed_loop(float linear, float angular);
     void drive_closed_loop_update();
+
+    void left_motor_pwm(int left_pwm);
+    void right_motor_pwm(int right_pwm);
 
 #ifdef __cplusplus
 }

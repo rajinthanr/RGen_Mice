@@ -190,7 +190,8 @@ void read_values()
 	gyro_z_dps = ((int16_t)gyro_data_Z) / 65.5f;
 }
 
-float get_accY(){
+float get_accY()
+{
 	uint8_t data[2];
 	cs(0);
 	uint8_t reg_addr = 0x21 | 0x80; // Register address with read bit set
@@ -201,10 +202,11 @@ float get_accY(){
 
 	acc_data_Y0 = data[0];
 	acc_data_Y1 = data[1];
-	acc_data_Y = (acc_data_Y1 << 8) | acc_data_Y0;
+	uint16_t temp = (acc_data_Y1 << 8) | acc_data_Y0;
 
-	float val = ((int16_t)acc_data_Y) * 9.80665f / 8192.0f - offset_acc_y;
-	return val;
+	float acc_y_ms2 = ((int16_t)temp) * 9.80665f / 8192.0f;
+
+	return acc_y_ms2;
 }
 
 float get_gyroZ()

@@ -14,6 +14,14 @@ extern "C"
     float getRightSpeed(void);
     int32_t getLeftEncCount(void);
     int32_t getRightEncCount(void);
+    float robot_fwd_change(void);
+    float robot_rot_change(void);
+    float robot_distance(void);
+    float robot_angle(void);
+    void update(void);
+
+    void resetLeftEncCount(void);
+    void resetRightEncCount(void);
 
     // Prototypes for recent functions and variables
     void updateEncoderCounts(void);

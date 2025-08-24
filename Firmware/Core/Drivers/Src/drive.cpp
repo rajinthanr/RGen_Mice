@@ -9,13 +9,13 @@
 extern TIM_HandleTypeDef htim3;
 
 // Example global variable
-MouseMotionState mouse = {
+MouseMotionState mice = {
     .linear_speed = 0.0f,
     .angular_speed = 0.0f,
     .target_linear_speed = 0.0f,
     .target_angular_speed = 0.0f,
-    .max_linear_speed = 100.0f,  // Example: 800 mm/s
-    .max_angular_speed = 0.0f,   // Example: 360 deg/s
+    .max_linear_speed = 100.0f, // Example: 800 mm/s
+    .max_angular_speed = 0.0f,  // Example: 360 deg/s
     .max_linear_accel = 200.0f, // Example: 2000 mm/s^2
     .max_angular_accel = 100.0f // Example: 1800 deg/s^2
 };
@@ -112,7 +112,7 @@ void drive_set_closed_loop(float linear, float angular)
     target_linear = linear;
     target_angular = angular;
     // If speed varies over 100 mm/s, reset everything to zero
-    if (fabsf(linear - mouse.linear_speed) > 100.0f)
+    if (fabsf(linear - mice.linear_speed) > 100.0f)
     {
         pid_left.integral = 0.0f;
         pid_left.prev_error = 0.0f;
@@ -178,6 +178,38 @@ void drive_dif(float left_speed, float right_speed)
 
     // Set PWM for right motor (TIM3 CH3 & CH4)
     if (right_speed < 0)
+    {
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, right_pwm);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 0);
+    }
+    else
+    {
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, right_pwm);
+    }
+}
+
+void left_motor_pwm(int left_pwm)
+{
+
+    // Set PWM for left motor (TIM3 CH1 & CH2)
+    if (left_pwm < 0)
+    {
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, left_pwm);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
+    }
+    else
+    {
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, left_pwm);
+    }
+}
+
+void right_motor_pwm(int right_pwm)
+{
+
+    // Set PWM for right motor (TIM3 CH3 & CH4)
+    if (right_pwm < 0)
     {
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, right_pwm);
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 0);

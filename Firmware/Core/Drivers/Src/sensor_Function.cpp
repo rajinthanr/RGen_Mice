@@ -12,6 +12,7 @@
 int reflectionRate = 1000; // which is 1.000 (converted to ingeter)
 float cell_1 = 0;
 float cell_2 = 0;
+float battery_voltage = 0;
 
 int32_t volMeter = 0;
 int32_t voltage = 0;
@@ -130,6 +131,7 @@ void readVolMeter(void)
 	volMeter = read_Vol_Meter; // raw value
 	float c3_7 = readADC(2);
 	float v7_4 = readADC(3);
+	battery_voltage = v7_4 / 1000;
 
 	c3_7 = c3_7 * 0.488 * 3.3;
 	v7_4 = v7_4 * 0.731 * 3.3;
