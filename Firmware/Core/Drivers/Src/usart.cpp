@@ -82,11 +82,11 @@ void debug()
         }
         else if (strcmp(command, "ml") == 0)
         {
-            mouse.max_linear_speed = value;
+            mouse.linear_speed = value;
         }
         else if (strcmp(command, "ma") == 0)
         {
-            mouse.max_angular_speed = value;
+            mouse.angular_speed = value;
         }
         // Add more commands as needed
     }
@@ -115,7 +115,7 @@ void debug()
     }
     else if (strcmp(command, "reset") == 0)
     {
-        // Reset logic here
+        NVIC_SystemReset();
     }
     else if (strcmp(command, "calibrate_wall") == 0)
     {

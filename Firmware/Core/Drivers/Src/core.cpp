@@ -24,10 +24,13 @@ bool is_wall_follow = 0;
 
 void systick(void)
 {
+    if(Millis<1000) return;
     readGyro();
 }
 int core(void)
 {
+    printf("initialing..\r\n");
+    delay_ms(50);
     init_flash();
     Wall_Configuration();
     Systick_Configuration();
@@ -40,20 +43,19 @@ int core(void)
     //     usart1_Configuration(9600);
     //     SPI_Configuration();
     //     TIM4_PWM_Init();
-    char msg[] = "Hello via UART Interrupt!\r\n";
-    HAL_UART_Transmit_IT(&huart1, (uint8_t *)msg, strlen(msg));
     Encoder_Configration();
     //    buzzer_Configuration();
     ADC_Config();
     //
     //    shortBeep(2000, 8000);
+    printf("Core initialized\r\n");
     while (1)
     {
         LED1_ON;
-        delay_ms(10);
+        delay_ms(1);
         readSensor();
         //  read_values();
-        readSensor();
+        //readSensor();
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)

@@ -71,7 +71,7 @@ float right_speed;
 // Redirect printf to UART
 int __io_putchar(int ch)
 {
-  static uint8_t buffer[100];
+  static uint8_t buffer[200];
   static int ptr = 0;
   buffer[ptr++] = ch;
   if (ch == '\n')

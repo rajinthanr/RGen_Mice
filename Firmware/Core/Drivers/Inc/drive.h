@@ -10,6 +10,9 @@ extern "C"
 
 typedef struct
 {
+    float target_dis;
+    float target_angle;
+    
     // Current state
     float linear_speed;  // Current linear speed (mm/s)
     float angular_speed; // Current angular speed (deg/s or rad/s)
