@@ -91,7 +91,7 @@ void debug()
         // Add more commands as needed
     }
     if (strcmp(cmdBuffer, "info") == 0)
-        printf("%d  %d  %d  %d  aSpeed %.2f angle %.2f acc %.2f cell1 %.0f cell2 %.0f lenc %d renc %d\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1, cell_2, getLeftEncCount(), getRightEncCount());
+        printf("%d  %d  %d  %d  aSpeed %.2f angle %.2f acc %.2f cell1 %.0f cell2 %.0f lenc %d renc %d for %.2f\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1, cell_2, getLeftEncCount(), getRightEncCount(), get_forward_dis());
     else if (strcmp(cmdBuffer, "dis") == 0)
     {
         for (int i = 0; i < 4; i++)

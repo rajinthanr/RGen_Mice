@@ -14,6 +14,7 @@ extern "C"
     float getRightSpeed(void);
     int32_t getLeftEncCount(void);
     int32_t getRightEncCount(void);
+    float get_forward_dis(void);
 
     // Prototypes for recent functions and variables
     void updateEncoderCounts(void);

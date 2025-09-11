@@ -41,16 +41,34 @@ static float target_angular = 0.0f;
 // Call this periodically (e.g., every 10ms)
 #include "delay.h"
 
+float position_controller() {
+//    static uint64_t last_time = 0;
+//    uint64_t now = micros();
+//    float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
+//    last_time = now;
+//
+//    float increment = target_linear  * dt;
+//    m_fwd_error += increment - encoders.robot_fwd_change();
+//    float diff = m_fwd_error - m_previous_fwd_error;
+//    m_previous_fwd_error = m_fwd_error;
+//    float output = FWD_KP * m_fwd_error + FWD_KD * diff;
+//    return output;
+  }
+
 void drive_closed_loop_update()
 {
-    static uint32_t last_time = 0;
-    uint32_t now = micros();
+    static uint64_t last_time = 0;
+    uint64_t now = micros();
     float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
     last_time = now;
 
     // Get current wheel speeds from encoders (mm/s)
     float left_measured = getLeftSpeed();   // returns mm/s
     float right_measured = getRightSpeed(); // returns mm/s
+
+    uint64_t left_enc = getLeftEncCount();
+    uint64_t right_enc = getRightEncCount();
+
 
     // Get current heading from gyro (deg/s)
     float gyro_angular_deg = get_gyroZ();

@@ -46,6 +46,10 @@ float getRightSpeed(void)
 	return (dt_sec > 0) ? (distance_mm / dt_sec) : 0.0f;
 }
 
+float get_forward_dis(){
+	 return (getLeftEncCount() + getRightEncCount())*1.0 / (2.0f * ENCODER_TICKS_PER_MM);
+}
+
 void Encoder_Configration(void)
 {
 	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);

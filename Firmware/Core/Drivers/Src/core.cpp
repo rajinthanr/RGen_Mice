@@ -24,6 +24,7 @@ bool is_wall_follow = 0;
 
 void systick(void)
 {
+    readGyro();
 }
 int core(void)
 {
@@ -53,7 +54,6 @@ int core(void)
         readSensor();
         //  read_values();
         readSensor();
-        readGyro();
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
