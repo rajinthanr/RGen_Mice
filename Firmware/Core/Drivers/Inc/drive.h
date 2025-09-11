@@ -10,6 +10,7 @@ extern "C"
 
 typedef struct
 {
+    float speed_adj;
     float steering_adj;
     float target_dis;
     float target_angle;

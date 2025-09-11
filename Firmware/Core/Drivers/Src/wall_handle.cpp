@@ -18,8 +18,8 @@ typedef struct
     float previous_error;
 } PID;
 
-PID pid_theta = {50.0f, 0.8f, 0.1f, 0, 0};
-PID pid_distance = {50.0f, 0.8f, 0.1f, 0, 0};
+PID pid_theta = {30.0f, 0.3f, 0.1f, 0, 0};
+PID pid_distance = {30.0f, 0.3f, 0.1f, 0, 0};
 
 void Wall_Configuration(void)
 {
@@ -126,6 +126,14 @@ float wallFront(int band)
     float derivative = error_theta - pid_theta.previous_error;
     pid_theta.previous_error = error_theta;
 
+    pid_theta.integral = clamp(pid_theta.integral, -100, 100);
+    if (reset_wall_pid)
+    {
+        pid_theta.integral = error_theta;
+        derivative = 0;
+        reset_wall_pid = false;
+    }
+
     float correction_angle = pid_theta.kp * error_theta + pid_theta.ki * pid_theta.integral + pid_theta.kd * derivative;
     float correction_speed = 0;
 
@@ -137,6 +145,7 @@ float wallFront(int band)
         pid_distance.integral += error_distance;
         float derivative_distance = error_distance - pid_distance.previous_error;
         pid_distance.previous_error = error_distance;
+        pid_distance.integral = clamp(pid_distance.integral, -100, 100);
 
         correction_speed = pid_distance.kp * error_distance + pid_distance.ki * pid_distance.integral + pid_distance.kd * derivative_distance;
     }
@@ -144,9 +153,10 @@ float wallFront(int band)
     correction_angle = clamp(correction_angle, -400, 400);
     correction_speed = clamp(correction_speed, -400, 400);
 
-    drive_set_closed_loop(correction_speed, correction_angle);
+    mouse.angular_speed = correction_angle;
+    mouse.linear_speed = correction_speed;
 
-    return (abs(error_l * 1000) + abs(error_r * 1000));
+    return abs(correction_angle) + abs(correction_speed);
 }
 
 void wallFollow(bool include_left, bool include_right)
