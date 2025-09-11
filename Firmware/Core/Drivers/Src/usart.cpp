@@ -88,7 +88,11 @@ void debug()
         {
             mouse.angular_speed = value;
         }
-        // Add more commands as needed
+        else if (strcmp(command, "turn") == 0)
+        {
+            printf("Turning to %.2f degrees\r\n", value);
+            is_run = 1;
+        }
     }
     if (strcmp(cmdBuffer, "info") == 0)
         printf("%d  %d  %d  %d  aSpeed %.2f angle %.2f acc %.2f cell1 %.0f cell2 %.0f lenc %d renc %d for %.2f\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1, cell_2, getLeftEncCount(), getRightEncCount(), get_forward_dis());
@@ -141,4 +145,5 @@ void debug()
         is_wall_follow = !is_wall_follow;
         printf("Wall Follow: %d\r\n", is_wall_follow);
     }
+
 }

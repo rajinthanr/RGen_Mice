@@ -54,6 +54,8 @@ float position_controller() {
     float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
     last_time = now;
 
+    dt = 0.001;
+
     mouse.target_dis += (mouse.linear_speed + mouse.speed_adj) * dt;
     mouse.speed_adj = 0; // Reset after use
     float error = mouse.target_dis - get_forward_dis();
@@ -71,18 +73,19 @@ float position_controller() {
   float angle_controller() {
     static float previous_error = 0.0f;
     static float I = 0.0f;
-    const float KP = 0.004f; // Proportional gain
-    const float KD = 0.0001f; // Derivative gain
-    const float KI = 0.0001f;  // Integral gain
+    const float KP = 0.08f; // Proportional gain
+    const float KD = 4.0f; // Derivative gain
+    const float KI = 0.03f;  // Integral gain
 
     static uint32_t last_time = 0;
     uint32_t now = micros();
     float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
     last_time = now;
+    dt = 0.001;
 
-    float error = mouse.angular_speed + mouse.steering_adj - aSpeed;
+    mouse.target_angle += (mouse.angular_speed + mouse.steering_adj) * dt;
     mouse.steering_adj = 0; // Reset after use
-
+    float error = mouse.target_angle - angle;
     float diff = error - previous_error;
     previous_error = error;
     I += error * dt;
@@ -188,3 +191,6 @@ void drive_dif(float left_speed, float right_speed)
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, right_pwm);
     }
 }
+
+
+

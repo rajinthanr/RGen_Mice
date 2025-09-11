@@ -223,5 +223,5 @@ float get_gyroZ()
 	gyro_data_Z = (gyro_data_Z1 << 8) | gyro_data_Z0;
 
 	float gyro_z_dps = ((int16_t)gyro_data_Z) / 65.5f;
-	return gyro_z_dps - offset_gyro_z;
+	return (gyro_z_dps - offset_gyro_z)*3555/3600;
 }

@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
+
+#include "motion.h"
+#include "profile.h"
 using namespace std;
 extern "C"
 {

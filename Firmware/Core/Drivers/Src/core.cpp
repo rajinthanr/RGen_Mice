@@ -12,6 +12,11 @@
 #include "flash.h"
 #include "wall_handle.h"
 
+
+Motion motion;                            // high level motion operations
+Profile forward;                          // speed profiles for forward motion
+Profile rotation;                         // speed profiles for rotary motion
+
 extern UART_HandleTypeDef huart1; // Change to your UART instance
 uint8_t is_run = 0;
 
@@ -26,6 +31,14 @@ void systick(void)
 {
     if(Millis<1000) return;
     readGyro();
+    if (is_mouse_enable)
+        {
+            mouse.linear_speed = motion.velocity();
+            mouse.angular_speed = motion.omega();
+            drive_closed_loop_update();
+            motion.update();
+            // drive_dif(mouse.max_linear_speed/100,mouse.max_linear_speed/100);
+        }
 }
 int core(void)
 {
@@ -72,7 +85,8 @@ int core(void)
         //        delay_ms(1000);
         if (is_run)
         {
-            drive_set_closed_loop(mouse.max_linear_speed, mouse.max_angular_speed);
+            motion.spin_turn(90, 300, 50);
+            is_run = 0;
         }
         if (is_calibrate)
         {
@@ -83,11 +97,7 @@ int core(void)
         {
             wallFront(0);
         }
-        if (is_mouse_enable)
-        {
-            drive_closed_loop_update();
-            // drive_dif(mouse.max_linear_speed/100,mouse.max_linear_speed/100);
-        }
+        
         if (is_wall_follow)
         {
             wallFollow(true, true);
