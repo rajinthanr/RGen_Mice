@@ -149,6 +149,8 @@ void debug()
     {
         is_wall_front = 1;
         printf("Wall Front: %d\r\n", is_wall_front);
+        motion.start_move(60, mouse.max_linear_speed, 0, mouse.max_linear_accel);
+        motion.start_turn(60, mouse.max_angular_speed, 0, mouse.max_angular_accel);
     }
     else if (strcmp(command, "mouse_enable") == 0)
     {

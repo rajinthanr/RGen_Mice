@@ -124,9 +124,9 @@ void icm_initialize()
 		avg_acc_x += acc_x_ms2;
 		avg_acc_y += acc_y_ms2;
 		avg_acc_z += acc_z_ms2;
-		avg_gyro_x += gyro_x_dps;
-		avg_gyro_y += gyro_y_dps;
-		avg_gyro_z += gyro_z_dps;
+		avg_gyro_x += gyro_data_X;
+		avg_gyro_y += gyro_data_Y;
+		avg_gyro_z += gyro_data_Z;
 	}
 	avg_acc_x /= 1000;
 	avg_acc_y /= 1000;
@@ -220,8 +220,8 @@ float get_gyroZ()
 
 	gyro_data_Z1 = data[0];
 	gyro_data_Z0 = data[1];
-	gyro_data_Z = (gyro_data_Z1 << 8) | gyro_data_Z0;
+	gyro_data_Z = ((gyro_data_Z1 << 8) | gyro_data_Z0) - offset_gyro_z;
 
 	float gyro_z_dps = ((int16_t)gyro_data_Z) / 16.4f;
-	return (gyro_z_dps - offset_gyro_z)*3555/3600;
+	return (gyro_z_dps)*3555/3600;
 }
