@@ -153,8 +153,8 @@ float wallFront(int band)
     correction_angle = clamp(correction_angle, -400, 400);
     correction_speed = clamp(correction_speed, -400, 400);
 
-    mouse.angular_speed = correction_angle;
-    mouse.linear_speed = correction_speed;
+    motion.set_target_omega(correction_angle );
+    motion.set_target_velocity(correction_speed);
 
     return abs(correction_angle) + abs(correction_speed);
 }

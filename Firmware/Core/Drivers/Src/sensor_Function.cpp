@@ -93,11 +93,13 @@ void readSensor(void)
 void readGyro(void)
 { // k=19791(sum for sample in 1 second)    101376287 for 50 seconds with 5000 samples
 	aSpeed = get_gyroZ();
-	static uint64_t last_time = 0;
-	uint64_t now = micros();
-	float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f;
+//	static uint64_t last_time = 0;
+//	uint64_t now = micros();
+//	float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f;
+
+	float dt = 0.001;
 	angle += aSpeed * dt;
-	last_time = now;
+	//.last_time = now;
 }
 
 void safety_stop(int duration = 400)

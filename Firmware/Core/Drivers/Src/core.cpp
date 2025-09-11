@@ -85,7 +85,7 @@ int core(void)
         //        delay_ms(1000);
         if (is_run)
         {
-            motion.spin_turn(90, 300, 50);
+            motion.spin_turn(720, mouse.max_angular_speed, mouse.max_angular_accel);
             is_run = 0;
         }
         if (is_calibrate)

@@ -77,7 +77,7 @@ void icm_initialize()
 	// HAL_SPI_Transmit(&hspi3, &buffer, 1, 100);
 
 	uint16_t accel_fs_sel = 0x40; // ACCEL_CONFIG: FS_SEL=2 (±8g), bits [3:2]=10
-	uint16_t gyro_fs_sel = 0x40;	// GYRO_CONFIG: FS_SEL=2 (±1000 dps), bits [4:3]=10
+	uint16_t gyro_fs_sel = 0x00;  // GYRO_CONFIG: FS_SEL=0 (±2000 dps), bits [4:3]=00	
 
 	// Write ACCEL_CONFIG register (address 0x14)
 	uint16_t accel_config_reg = 0x50;
@@ -222,6 +222,6 @@ float get_gyroZ()
 	gyro_data_Z0 = data[1];
 	gyro_data_Z = (gyro_data_Z1 << 8) | gyro_data_Z0;
 
-	float gyro_z_dps = ((int16_t)gyro_data_Z) / 65.5f;
+	float gyro_z_dps = ((int16_t)gyro_data_Z) / 16.4f;
 	return (gyro_z_dps - offset_gyro_z)*3555/3600;
 }

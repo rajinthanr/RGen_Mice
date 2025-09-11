@@ -15,10 +15,10 @@ MouseMotionState mouse = {
     .angular_speed = 0.0f,
     .target_linear_speed = 0.0f,
     .target_angular_speed = 0.0f,
-    .max_linear_speed = 100.0f,  // Example: 800 mm/s
-    .max_angular_speed = 0.0f,   // Example: 360 deg/s
-    .max_linear_accel = 200.0f, // Example: 2000 mm/s^2
-    .max_angular_accel = 100.0f // Example: 1800 deg/s^2
+    .max_linear_speed = 600.0f,  // Example: 800 mm/s
+    .max_angular_speed = 360.0f,   // Example: 360 deg/s
+    .max_linear_accel = 600.0f, // Example: 2000 mm/s^2
+    .max_angular_accel = 360.0f // Example: 1800 deg/s^2
 };
 
 // PID controller structure
@@ -73,15 +73,15 @@ float position_controller() {
   float angle_controller() {
     static float previous_error = 0.0f;
     static float I = 0.0f;
-    const float KP = 0.08f; // Proportional gain
-    const float KD = 4.0f; // Derivative gain
-    const float KI = 0.03f;  // Integral gain
+    const float KP = 0.06f; // Proportional gain
+    const float KD = 3.0f; // Derivative gain
+    const float KI = 0.3f;  // Integral gain
 
-    static uint32_t last_time = 0;
-    uint32_t now = micros();
-    float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
-    last_time = now;
-    dt = 0.001;
+//    static uint32_t last_time = 0;
+//    uint32_t now = micros();
+//    float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
+//    last_time = now;
+    float dt = 0.001;
 
     mouse.target_angle += (mouse.angular_speed + mouse.steering_adj) * dt;
     mouse.steering_adj = 0; // Reset after use
@@ -90,8 +90,8 @@ float position_controller() {
     previous_error = error;
     I += error * dt;
 
-    if(I > 100) I = 100; // Anti-windup
-    if(I < -100) I = -100;
+    if(I > 10) I = 10; // Anti-windup
+    if(I < -10) I = -10;
 
     float output = KP * error + KD * diff + KI * I;
     return output;
@@ -99,8 +99,10 @@ float position_controller() {
 
 void drive_closed_loop_update()
 {
-    float output_left = position_controller()-angle_controller();
-    float output_right = position_controller()+angle_controller();
+    float angle_correction = angle_controller();
+    float position_correction = position_controller();
+    float output_left = position_correction - angle_correction;
+    float output_right = position_correction + angle_correction;
 
     output_left = fmaxf(fminf(output_left, 1.0f), -1.0f);
     output_right = fmaxf(fminf(output_right, 1.0f), -1.0f);

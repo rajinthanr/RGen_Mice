@@ -1,5 +1,7 @@
 #include "usart.h"
 #include "core.h"
+#include "profile.h"
+#include "motion.h"
 
 uint8_t rxData;        // Single byte receive buffer
 uint8_t rxBuffer[100]; // Main RX buffer
@@ -80,14 +82,31 @@ void debug()
         {
             drive(value, 0);
         }
-        else if (strcmp(command, "ml") == 0)
+        else if (strcmp(command, "l") == 0)
         {
-            mouse.linear_speed = value;
+            motion.start_move(value, mouse.max_linear_speed, 0, mouse.max_linear_accel);
+        }
+        else if (strcmp(command, "a") == 0)
+        {
+            motion.start_turn(value, mouse.max_angular_speed, 0, mouse.max_angular_accel);
         }
         else if (strcmp(command, "ma") == 0)
         {
-            mouse.angular_speed = value;
+            mouse.max_angular_speed = value;
         }
+        else if (strcmp(command, "ml") == 0)
+        {
+            mouse.max_linear_speed = value;
+        }
+        else if (strcmp(command, "maa") == 0)
+        {
+            mouse.max_angular_accel = value;
+        }
+        else if (strcmp(command, "mla") == 0)
+        {
+            mouse.max_linear_accel = value;
+        }
+
         else if (strcmp(command, "turn") == 0)
         {
             printf("Turning to %.2f degrees\r\n", value);
@@ -142,6 +161,7 @@ void debug()
     }
     else if (strcmp(command, "wall_follow") == 0)
     {
+        motion.start_move(600, mouse.max_linear_speed, 0, mouse.max_linear_accel);
         is_wall_follow = !is_wall_follow;
         printf("Wall Follow: %d\r\n", is_wall_follow);
     }
