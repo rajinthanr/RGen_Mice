@@ -2,6 +2,8 @@
 #include "core.h"
 #include "math.h"
 #include "delay.h"
+#include "drive.h"
+
 
 int wall_state, pre_wall_state;
 bool is_calibrate = 0;
@@ -198,5 +200,5 @@ void wallFollow(bool include_left, bool include_right)
 
     float dif = wall_theta_pid.kp * error + wall_theta_pid.ki * wall_theta_pid.integral + wall_theta_pid.kd * derivative;
 
-    drive_set_closed_loop(mouse.max_linear_speed, dif);
+    mouse.steering_adj = dif;
 }

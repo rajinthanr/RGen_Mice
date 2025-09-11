@@ -79,7 +79,9 @@ float position_controller() {
     float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
     last_time = now;
 
-    float error = mouse.angular_speed - aSpeed;
+    float error = mouse.angular_speed + mouse.steering_adj - aSpeed;
+    mouse.steering_adj = 0; // Reset after use
+    
     float diff = error - previous_error;
     previous_error = error;
     I += error * dt;
