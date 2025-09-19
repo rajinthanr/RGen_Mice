@@ -1,5 +1,5 @@
-
-#pragma once
+#ifndef CONFIG_H
+#define CONFIG_H
 
 
 #define NAME "MICE"
@@ -32,6 +32,18 @@ RAW values for the front sensor when the robot is backed up to a wall
            |_______|
 ##=============================##
 */
+
+#define PI 3.141592f
+
+struct TurnParameters {
+  int speed;         // mm/s    - constant forward speed during turn
+  int entry_offset;  // mm      - distance from turn pivot to turn start
+  int exit_offset;   // mm      - distance from turn pivot to turn end
+  float angle;       // deg     - total turn angle
+  float omega;       // deg/s   - maximum angular velocity
+  float alpha;       // deg/s/s - angular acceleration
+  int trigger;       //         - front sensor value at start of turn
+};
 
 #if EVENT == EVENT_HOME
 // wall sensor thresholds and constants
@@ -77,6 +89,7 @@ const int FRONT_REFERENCE = 1286;  // reading when mouse centered with wall ahea
 const int TURN_THRESHOLD_SS90E = 110;
 const int EXTRA_WALL_ADJUST = 6;
 
+
 #endif
 
 //***** IO PINS *****************************************************//
@@ -89,12 +102,12 @@ const int EXTRA_WALL_ADJUST = 6;
 // const int EMITTER_DIAGONAL = EMITTER_B;
 
 // the ADVANCED sensor board has only one LED so use the value twice
-const int LED_LEFT = USER_IO;
-const int LED_RIGHT = USER_IO;
-const int LED_USER = USER_IO;
-// but two emitter pins
-const int EMITTER_FRONT = EMITTER_A;
-const int EMITTER_DIAGONAL = EMITTER_B;
+//const int LED_LEFT = USER_IO;
+//const int LED_RIGHT = USER_IO;
+//const int LED_USER = USER_IO;
+//// but two emitter pins
+//const int EMITTER_FRONT = EMITTER_A;
+//const int EMITTER_DIAGONAL = EMITTER_B;
 
 //***** SENSOR HARDWARE *****************************************************//
 // the ADC channels corresponding to the sensor inputs. There are 8 available
@@ -105,6 +118,10 @@ const int EMITTER_DIAGONAL = EMITTER_B;
 
 // NOTE - these are the AnalogueConverter channel indexes, not necessariy the
 // hardware ADC channel numbers
+
+
+const float FULL_CELL = 180.0f;
+const float HALF_CELL = FULL_CELL / 2.0;
 
 // ADVANCED SENSOR
 const int RFS_ADC_CHANNEL = 0;
@@ -335,3 +352,6 @@ const int MOTOR_MAX_PWM = 255;
 
 // the position in the cell where the sensors are sampled.
 const float SENSING_POSITION = 170.0;
+
+
+#endif  // CONFIG_H

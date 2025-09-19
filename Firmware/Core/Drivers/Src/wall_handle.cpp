@@ -47,6 +47,8 @@ float dist(int ir_num)
 
 void cal_initial_wall()
 {
+    uint8_t pre_state = is_sensor_active;
+    enable();
     LED4_ON;
     delay_ms(1000);
     LED4_OFF;
@@ -79,6 +81,7 @@ void cal_initial_wall()
     delay_ms(2000);
     LED4_OFF;
     LED3_OFF;
+    if(!pre_state) disable();
 }
 
 void get_cal_initial_wall()
@@ -210,5 +213,5 @@ void wallFollow(bool include_left, bool include_right)
 
     float dif = wall_theta_pid.kp * error + wall_theta_pid.ki * wall_theta_pid.integral + wall_theta_pid.kd * derivative;
 
-    mouse.steering_adj = dif;
+    mouse.steering_adjustment = dif;
 }

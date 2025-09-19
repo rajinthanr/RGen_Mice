@@ -8,7 +8,10 @@
 
 #include "motion.h"
 #include "profile.h"
-using namespace std;
+#include "mouse.h"
+#include "delay.h"
+#include "maze.h"
+#include "led.h"
 extern "C"
 {
 #endif
@@ -19,7 +22,6 @@ extern "C"
 
 #include "core.h"
 #include "main.h"
-#include "delay.h"
 #include "adc.h"
 #include "led.h"
 #include "sensor_Function.h"
@@ -31,7 +33,7 @@ extern "C"
 #include "wall_handle.h"
 // #include "stm32f4xx.h"
 // #include "delay.h"
-#include "led.h"
+
 // #include "button.h"
 // #include <stdio.h>
 #include "usart.h"

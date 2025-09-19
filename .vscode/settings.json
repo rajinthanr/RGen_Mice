@@ -50,7 +50,13 @@
   "C_Cpp_Runner.warningsAsError": false,
   "C_Cpp_Runner.compilerArgs": [],
   "C_Cpp_Runner.linkerArgs": [],
-  "C_Cpp_Runner.includePaths": [],
+  "C_Cpp_Runner.includePaths": [
+    "${workspaceFolder}/Firmware/Core/Inc",
+    "${workspaceFolder}/Firmware/Core/Drivers/Inc",
+    "${workspaceFolder}/Firmware/Drivers/STM32F4xx_HAL_Driver/Inc",
+    "${workspaceFolder}/Firmware/Drivers/CMSIS/Device/ST/STM32F4xx/Include",
+    "${workspaceFolder}/Firmware/Drivers/CMSIS/Include"
+  ],
   "C_Cpp_Runner.includeSearch": [
     "*",
     "**/*"

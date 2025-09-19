@@ -6,20 +6,11 @@
 #include "encoder.h"
 #include "icm.h"
 #include "sensor_Function.h"
+#include "mouse.h"
+#include "core.h"
 
 extern TIM_HandleTypeDef htim3;
 
-// Example global variable
-MouseMotionState mouse = {
-    .linear_speed = 0.0f,
-    .angular_speed = 0.0f,
-    .target_linear_speed = 0.0f,
-    .target_angular_speed = 0.0f,
-    .max_linear_speed = 600.0f,  // Example: 800 mm/s
-    .max_angular_speed = 360.0f,   // Example: 360 deg/s
-    .max_linear_accel = 600.0f, // Example: 2000 mm/s^2
-    .max_angular_accel = 360.0f // Example: 1800 deg/s^2
-};
 
 // PID controller structure
 typedef struct
@@ -82,9 +73,13 @@ float position_controller() {
 //    float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
 //    last_time = now;
     float dt = 0.001;
-
-    mouse.target_angle += (mouse.angular_speed + mouse.steering_adj) * dt;
-    mouse.steering_adj = 0; // Reset after use
+    
+    mouse.target_angle += mouse.angular_speed  * dt;
+    if(mouse.steering_mode != STEERING_OFF){
+        wallFollow(true,true);
+    mouse.target_angle +=  mouse.steering_adjustment * dt;
+    }
+    mouse.steering_adjustment = 0; // Reset after use
     float error = mouse.target_angle - angle;
     float diff = error - previous_error;
     previous_error = error;

@@ -186,9 +186,9 @@ void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
   Millis++;
+  systick();
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
-  systick();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */

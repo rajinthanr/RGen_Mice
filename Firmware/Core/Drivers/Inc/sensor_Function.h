@@ -24,8 +24,20 @@ extern "C"
     extern float aSpeed;
     extern float angle;
 
+    extern uint8_t NO_START;
+    extern uint8_t LEFT_START;
+    extern uint8_t RIGHT_START;
+
     extern int reading[4];
     extern float dis_reading[4];
+    extern uint8_t is_sensor_active;
+
+    enum {
+  STEER_NORMAL,
+  STEER_LEFT_WALL,
+  STEER_RIGHT_WALL,
+  STEERING_OFF,
+  };
 
 // Re-order to match logical order: FL, L, R, FR -> channels: 11,10,4,5
 #define read_L_Sensor readADC(10)
@@ -43,10 +55,17 @@ extern "C"
 #define FL_EM_OFF HAL_GPIO_WritePin(TR_FL_GPIO_Port, TR_FL_Pin, GPIO_PIN_RESET);
 
     void readSensor(void);
+    float get_front_sum();
     void readGyro(void);
     void readVolMeter(void);
     void lowBatCheck(void);
     void IR_Configuration(void);
+    void enable();
+    void disable();
+    uint8_t occluded_left();
+    uint8_t occluded_right();
+    uint8_t wait_for_user_start();
+    void set_steering_mode(uint8_t mode);
 
 #ifdef __cplusplus
 }

@@ -24,10 +24,23 @@ float aSpeed = 0; // angular velocity
 float angle = 0;
 int reading[4];
 float dis_reading[4];
+uint8_t is_sensor_active = false;
+
+uint8_t NO_START = 0;
+uint8_t LEFT_START = 1;
+uint8_t RIGHT_START = 2;
+
+
+void set_steering_mode(uint8_t mode) {
+   mouse.last_steering_error = 0;
+   mouse.steering_adjustment = 0;
+   mouse.steering_mode = mode;
+  }
 
 /*read IR sensors*/
 void readSensor(void)
 {
+	if(is_sensor_active == false) return;
 	uint32_t curt;
 	// read DC value
 
@@ -45,19 +58,19 @@ void readSensor(void)
 	L_EM_OFF;
 	if (LSensor < 0) // error check
 		LSensor = 0;
-	elapseMicros(140, curt);
+	//elapseMicros(140, curt);
 	// right front sensor
 	R_EM_ON;
-	elapseMicros(200, curt);
+	elapseMicros(120, curt);
 	RSensor = read_R_Sensor - RSensor;
 	R_EM_OFF;
 	if (RSensor < 0)
 		RSensor = 0;
-	elapseMicros(280, curt);
+	//elapseMicros(280, curt);
 	// diagonal sensors
 	FL_EM_ON;
 	FR_EM_ON;
-	elapseMicros(340, curt);
+	elapseMicros(180, curt);
 	FLSensor = read_FL_Sensor - FLSensor;
 	FRSensor = read_FR_Sensor - FRSensor;
 	FL_EM_OFF;
@@ -88,6 +101,11 @@ void readSensor(void)
 	// elapseMicros(500,curt);
 }
 // there are 1000 - 340 = 660 us remaining in a 1ms_ISR
+
+float get_front_sum()
+{
+	return dis_reading[FL] + dis_reading[FR];
+}
 
 /*read gyro*/
 void readGyro(void)
@@ -177,3 +195,54 @@ void IR_Configuration(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(TR_FR_GPIO_Port, &GPIO_InitStruct);
 }
+
+void enable(){
+	is_sensor_active = true;
+}
+
+void disable(){
+	is_sensor_active = false;
+}
+
+uint8_t occluded_left() {
+    return dis_reading[FL] < 5 && dis_reading[FR] > 5 ;
+  }
+
+uint8_t occluded_right() {
+    return dis_reading[FL] > 5 && dis_reading[FR] < 5;
+  }
+
+
+uint8_t wait_for_user_start() {
+    int state = 0;
+    LED3_ON;
+    enable();
+    uint8_t choice = NO_START;
+    while (choice == NO_START) {
+      int count = 0;
+      while (occluded_left()) {
+        count++;
+        delay_ms(20);
+      }
+      if (count > 5) {
+        choice = LEFT_START;
+        break;
+      }
+      count = 0;
+      while (occluded_right()) {
+        count++;
+        delay_ms(20);
+      }
+      if (count > 5) {
+        choice = RIGHT_START;
+        break;
+      }
+      LED3_ON;
+      state = 1 - state;
+      delay_ms(25);
+    }
+    disable();
+    LED3_OFF;
+    delay_ms(250);
+    return choice;
+  }

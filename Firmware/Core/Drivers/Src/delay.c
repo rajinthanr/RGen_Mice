@@ -18,7 +18,7 @@ void Systick_Configuration(void)
 
 	//set systick interrupt priority
 	//NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);	//4 bits for preemp priority 0 bit for sub priority
-	NVIC_SetPriority(SysTick_IRQn, 0);
+	//NVIC_SetPriority(SysTick_IRQn, 0);
 	  
 	Millis = 0;//reset Millis
 }

@@ -113,9 +113,14 @@ void debug()
             is_run = 1;
         }
     }
-    if (strcmp(cmdBuffer, "info") == 0)
+    if (strcmp(cmdBuffer, "info") == 0){
+    uint8_t pre_state = is_sensor_active;
+    enable();
+    readSensor();
         printf("%d  %d  %d  %d  w %.2f angle %.2f a %.2f b1 %.3f b2 %.3f lenc %d renc %d for %.2f\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1/1000, cell_2/1000, getLeftEncCount(), getRightEncCount(), get_forward_dis());
-    else if (strcmp(cmdBuffer, "dis") == 0)
+    if(!pre_state) disable();
+    }
+        else if (strcmp(cmdBuffer, "dis") == 0)
     {   
         for (int i = 0; i < 4; i++)
             printf("  %.2f  |", dis_reading[i]);

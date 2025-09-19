@@ -11,11 +11,16 @@
 #include <cstring>
 #include "flash.h"
 #include "wall_handle.h"
+//#include "mouse.h"
+#include "button.h"
 
 
 Motion motion;                            // high level motion operations
 Profile forward;                          // speed profiles for forward motion
 Profile rotation;                         // speed profiles for rotary motion
+Switches switches;
+Mouse mouse;
+Maze maze;
 
 extern UART_HandleTypeDef huart1; // Change to your UART instance
 uint8_t is_run = 0;
@@ -31,6 +36,8 @@ void systick(void)
 {
     if(Millis<2000) return;
     readGyro();
+    readSensor();
+
     if (is_mouse_enable)
         {
             mouse.linear_speed = motion.velocity();
@@ -68,7 +75,7 @@ int core(void)
     {
         LED2_ON;
         delay_ms(1);
-        readSensor();
+        //readSensor();
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
@@ -81,7 +88,8 @@ int core(void)
 
         if (is_run)
         {
-            motion.spin_turn(720, mouse.max_angular_speed, mouse.max_angular_accel);
+            mouse.search_maze();
+            //motion.spin_turn(720, mouse.max_angular_speed, mouse.max_angular_accel);
             is_run = 0;
         }
         if (is_calibrate)
