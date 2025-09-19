@@ -160,13 +160,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    left_enc = __HAL_TIM_GET_COUNTER(&htim1);
-    right_enc = __HAL_TIM_GET_COUNTER(&htim2);
-    read_values();
-    readSensor();
-
     LED_Blink(1, 100, 1);
-    drive_dif(left_speed, right_speed);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

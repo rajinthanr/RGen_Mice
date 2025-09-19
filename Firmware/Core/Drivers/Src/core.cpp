@@ -29,7 +29,7 @@ bool is_wall_follow = 0;
 
 void systick(void)
 {
-    if(Millis<1000) return;
+    if(Millis<2000) return;
     readGyro();
     if (is_mouse_enable)
         {
@@ -51,24 +51,24 @@ int core(void)
     IR_Configuration();
     icm_initialize();
     UART_Configurations();
-    // drive(0.6,0);
-    //     button_Configuration();
-    //     usart1_Configuration(9600);
-    //     SPI_Configuration();
-    //     TIM4_PWM_Init();
+    
     Encoder_Configration();
-    //    buzzer_Configuration();
+    
     ADC_Config();
-    //
-    //    shortBeep(2000, 8000);
     printf("Core initialized\r\n");
+
+
+
+
+
+
+
+
     while (1)
     {
-        LED1_ON;
+        LED2_ON;
         delay_ms(1);
         readSensor();
-        //  read_values();
-        //readSensor();
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
@@ -77,12 +77,8 @@ int core(void)
             lastTick = HAL_GetTick();
             // printf("L %d R %d FL %d FR %d aSpeed %.2f angle %.2f voltage %d lenc %d renc %d\r\n", LSensor, RSensor, FLSensor, FRSensor, get_gyroZ(), angle, voltage, getLeftEncCount(), getRightEncCount());
         }
-        //        printf("LF %d RF %d DL %d DR %d aSpeed %d angle %d voltage %d lenc %d renc %d\r\n", LFSensor, RFSensor, DLSensor, DRSensor, aSpeed, angle, voltage, getLeftEncCount(), getRightEncCount());
-        //        displayMatrix("mous");
-        //
-        //        setLeftPwm(100);
-        //        setRightPwm(100);
-        //        delay_ms(1000);
+        
+
         if (is_run)
         {
             motion.spin_turn(720, mouse.max_angular_speed, mouse.max_angular_accel);

@@ -114,11 +114,11 @@ void debug()
         }
     }
     if (strcmp(cmdBuffer, "info") == 0)
-        printf("%d  %d  %d  %d  aSpeed %.2f angle %.2f acc %.2f cell1 %.0f cell2 %.0f lenc %d renc %d for %.2f\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1, cell_2, getLeftEncCount(), getRightEncCount(), get_forward_dis());
+        printf("%d  %d  %d  %d  w %.2f angle %.2f a %.2f b1 %.3f b2 %.3f lenc %d renc %d for %.2f\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1/1000, cell_2/1000, getLeftEncCount(), getRightEncCount(), get_forward_dis());
     else if (strcmp(cmdBuffer, "dis") == 0)
-    {
+    {   
         for (int i = 0; i < 4; i++)
-            printf("%.2f\  ", i, dis_reading[i]);
+            printf("  %.2f  |", dis_reading[i]);
         printf("\r\n");
     }
     else if (strcmp(cmdBuffer, "run") == 0)

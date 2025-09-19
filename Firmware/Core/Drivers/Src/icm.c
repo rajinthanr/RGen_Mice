@@ -118,22 +118,22 @@ void icm_initialize()
 	float avg_gyro_y = 0;
 	float avg_gyro_z = 0;
 
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < 10000; i++)
 	{
 		read_values();
 		avg_acc_x += acc_x_ms2;
 		avg_acc_y += acc_y_ms2;
 		avg_acc_z += acc_z_ms2;
-		avg_gyro_x += gyro_data_X;
-		avg_gyro_y += gyro_data_Y;
-		avg_gyro_z += gyro_data_Z;
+		avg_gyro_x += gyro_x_dps;
+		avg_gyro_y += gyro_y_dps;
+		avg_gyro_z += gyro_z_dps;
 	}
-	avg_acc_x /= 1000;
-	avg_acc_y /= 1000;
-	avg_acc_z /= 1000;
-	avg_gyro_x /= 1000;
-	avg_gyro_y /= 1000;
-	avg_gyro_z /= 1000;
+	avg_acc_x /= 10000;
+	avg_acc_y /= 10000;
+	avg_acc_z /= 10000;
+	avg_gyro_x /= 10000;
+	avg_gyro_y /= 10000;
+	avg_gyro_z /= 10000;
 
 	offset_acc_x = avg_acc_x;
 	offset_acc_y = avg_acc_y;
@@ -183,11 +183,11 @@ void read_values()
 	acc_y_ms2 = ((int16_t)acc_data_Y) * 9.80665f / 8192.0f;
 	acc_z_ms2 = ((int16_t)acc_data_Z) * 9.80665f / 8192.0f;
 
-	// Gyroscope: convert raw values to dps (assuming ±500 dps, 16-bit)
-	// Sensitivity for ±500 dps: 65.5 LSB/(°/s)
-	gyro_x_dps = ((int16_t)gyro_data_X) / 65.5f;
-	gyro_y_dps = ((int16_t)gyro_data_Y) / 65.5f;
-	gyro_z_dps = ((int16_t)gyro_data_Z) / 65.5f;
+	// Gyroscope: convert raw values to dps (assuming ±2000 dps, 16-bit)
+	// Sensitivity for ±2000 dps: 16.4 LSB/(°/s)
+	gyro_x_dps = ((int16_t)gyro_data_X) / 16.4f;
+	gyro_y_dps = ((int16_t)gyro_data_Y) / 16.4f;
+	gyro_z_dps = ((int16_t)gyro_data_Z) / 16.4f;
 }
 
 float get_accY(){
@@ -220,8 +220,8 @@ float get_gyroZ()
 
 	gyro_data_Z1 = data[0];
 	gyro_data_Z0 = data[1];
-	gyro_data_Z = ((gyro_data_Z1 << 8) | gyro_data_Z0) - offset_gyro_z;
+	gyro_data_Z = ((gyro_data_Z1 << 8) | gyro_data_Z0);
 
-	float gyro_z_dps = ((int16_t)gyro_data_Z) / 16.4f;
+	float gyro_z_dps = ((int16_t)gyro_data_Z) / 16.4f - offset_gyro_z;
 	return (gyro_z_dps)*3555/3600;
 }
