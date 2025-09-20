@@ -72,6 +72,13 @@ void LED_Off(uint8_t led_num)
     HAL_GPIO_WritePin(led_configs[led_num-1].port, led_configs[led_num-1].pin, GPIO_PIN_RESET);
 }
 
+void LED_Toggle(uint8_t led_num)
+{
+	 if (led_num == 0 || led_num > sizeof(led_configs)/sizeof(led_configs[0]))
+		  return;
+	 HAL_GPIO_TogglePin(led_configs[led_num-1].port, led_configs[led_num-1].pin);
+}
+
 void LED_Blink(uint8_t led_num, uint32_t delay_time, uint8_t times)
 {
     if (led_num == 0 || led_num > sizeof(led_configs)/sizeof(led_configs[0]))

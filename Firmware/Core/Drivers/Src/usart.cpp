@@ -2,12 +2,33 @@
 #include "core.h"
 #include "profile.h"
 #include "motion.h"
+#include <cstdarg>
+
 
 uint8_t rxData;        // Single byte receive buffer
 uint8_t rxBuffer[100]; // Main RX buffer
 uint16_t rxIndex = 0;
 
 extern UART_HandleTypeDef huart1; // Change to your UART instance\
+
+
+void print2(const char *format, ...)
+{
+    char buffer[200]; // Adjust size as needed
+    va_list args;
+    va_start(args, format);
+    int len = vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    if (len > 0)
+    {
+        if (len > sizeof(buffer))
+            len = sizeof(buffer); // Truncate if necessary
+        for(int i=0;i<len;i++){
+            __io_putchar(buffer[i]);
+        }
+    }
+}
 
 void UART_Configurations()
 {
@@ -16,9 +37,16 @@ void UART_Configurations()
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if (huart->Instance == USART1)
+    //if (huart->Instance == USART1)
     {
-        // Transmission finished
+        if(cur_transmitting != cur_storing)
+        {
+            HAL_UART_Transmit_IT(&huart1, (uint8_t *)&buffer[cur_transmitting],ptr[cur_transmitting]);
+            ptr[cur_transmitting]=0;
+            cur_transmitting+=1;
+            if(cur_transmitting>=MAX_LINES) cur_transmitting=0;
+        }
+
     }
 }
 
@@ -172,5 +200,122 @@ void debug()
         is_wall_follow = !is_wall_follow;
         printf("Wall Follow: %d\r\n", is_wall_follow);
     }
+    else if (strcmp(command, "map") == 0)
+    {
+      for(int i=0;i<30;i++){
+      printf("Map\n");
+      printf("sidfhjglikasdhjfgopiasdsdfoj\n");
+      printf("Ready...\n");
+      }
+        int style = PLAIN;
+       // print_maze(style);
+    }
 
 }
+
+
+
+
+
+
+
+#define POST 'o'
+#define ERR '?'
+#define GAP "   "
+#define H_WALL "---"
+#define H_EXIT "   "
+#define H_UNKN "···"
+#define H_VIRT "###"
+#define V_WALL '|'
+#define V_EXIT ' '
+#define V_UNKN ':'
+#define V_VIRT '#'
+
+void print_justified(int32_t value, int width) {
+    int v = value;
+    int w = width;
+    w--;
+    if (v < 0) {
+      w--;
+    }
+    while (v /= 10) {
+      w--;
+    }
+    while (w > 0) {
+      printf(" ");
+      --w;
+    }
+    printf("%d", value);
+  }
+
+  void print_h_wall(uint8_t state) {
+    if (state == EXIT) {
+      printf("%s",H_EXIT);
+    } else if (state == WALL) {
+      printf("%s",H_WALL);
+    } else if (state == VIRTUAL) {
+      printf("%s",H_VIRT);
+    } else {
+      printf("%s",H_UNKN);
+    }
+  }
+  void printNorthWalls(int y) {
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+      printf("%c",POST);
+      WallInfo walls = maze.walls(Location(x, y));
+      print_h_wall(walls.north & maze.get_mask());
+    }
+    printf("%c\n",POST);
+  }
+
+  void printSouthWalls(int y) {
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+      printf("%c",POST);
+      WallInfo walls = maze.walls(Location(x, y));
+      print_h_wall(walls.south & maze.get_mask());
+    }
+    printf("%c\n",POST);
+  }
+
+  void print_maze(int style) {
+    const char dirChars[] = "^>v<* ";
+    maze.flood(maze.goal());
+
+    for (int y = MAZE_HEIGHT - 1; y >= 0; y--) {
+      printNorthWalls(y);
+      for (int x = 0; x < MAZE_WIDTH; x++) {
+        Location location(x, y);
+        WallInfo walls = maze.walls(location);
+        uint8_t state = walls.west & maze.get_mask();
+        if (state == EXIT) {
+          printf("%c",V_EXIT);
+        } else if (state == WALL) {
+          printf("%c",V_WALL);
+        } else if (state == VIRTUAL) {
+          printf("%c",V_VIRT);
+        } else {
+          printf("%c",V_UNKN);
+        }
+        if (style == COSTS) {
+          print_justified((int)maze.cost(location), 3);
+        } else if (style == DIRS) {
+          unsigned char direction = maze.heading_to_smallest(location, NORTH);
+          if (location == maze.goal()) {
+            direction = DIRECTION_COUNT;
+          }
+          char arrow = ' ';
+          if (direction != BLOCKED) {
+            arrow = dirChars[direction];
+          }
+          printf(" ");
+          printf("%c", arrow);
+          printf(" ");
+        } else {
+          printf("%s", GAP);
+        }
+      }
+      printf("%c\n", V_WALL);
+    }
+    printSouthWalls(0);
+    printf("\n");
+  }

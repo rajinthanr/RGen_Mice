@@ -10,6 +10,7 @@ extern "C"
 
 void LED_On(uint8_t led_num);
 void LED_Off(uint8_t led_num);
+void LED_Toggle(uint8_t led_num);
 void LED_Blink(uint8_t led_num, uint32_t delay_time, uint8_t times);
 
 #define LED1_ON LED_On(1)
@@ -20,6 +21,10 @@ void LED_Blink(uint8_t led_num, uint32_t delay_time, uint8_t times);
 #define LED3_OFF LED_Off(3)
 #define LED4_ON LED_On(4)
 #define LED4_OFF LED_Off(4)
+#define LED1_TOGGLE LED_Toggle(1)
+#define LED2_TOGGLE LED_Toggle(2)
+#define LED3_TOGGLE LED_Toggle(3)
+#define LED4_TOGGLE LED_Toggle(4)
 
 #define RF_EM_ON GPIO_SetBits(GPIOC, GPIO_Pin_1)
 #define RF_EM_OFF GPIO_ResetBits(GPIOC, GPIO_Pin_1)

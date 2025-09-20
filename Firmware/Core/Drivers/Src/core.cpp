@@ -15,6 +15,7 @@
 #include "button.h"
 
 
+
 Motion motion;                            // high level motion operations
 Profile forward;                          // speed profiles for forward motion
 Profile rotation;                         // speed profiles for rotary motion
@@ -36,7 +37,8 @@ void systick(void)
 {
     if(Millis<2000) return;
     readGyro();
-    readSensor();
+    //readSensor();
+    HAL_UART_TxCpltCallback(&huart1);
 
     if (is_mouse_enable)
         {
@@ -50,7 +52,7 @@ void systick(void)
 int core(void)
 {
     printf("initialing..\r\n");
-    delay_ms(50);
+   // delay_ms(50);
     init_flash();
     Wall_Configuration();
     Systick_Configuration();

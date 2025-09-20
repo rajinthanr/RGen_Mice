@@ -250,7 +250,7 @@ const float ROT_KD = LOOP_FREQUENCY * (8 * ROT_TM - ROT_TD) / (ROT_KM * ROT_TD);
 // controller constants for the steering controller
 const float STEERING_KP = 0.25;
 const float STEERING_KD = 0.00;
-const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
+const float STEERING_ADJUST_LIMIT = 40.0;  // deg/s
 
 // encoder polarity is either 1 or -1 and is used to account for reversal of the encoder phases
 #define ENCODER_LEFT_POLARITY (-1)
@@ -265,9 +265,9 @@ const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
 
 //***** PERFORMANCE CONSTANTS************************************************//
 // search and run speeds in mm/s and mm
-const int SEARCH_SPEED = 400;
+const int SEARCH_SPEED = 100;
 const int SEARCH_ACCELERATION = 2000;
-const int SEARCH_TURN_SPEED = 300;
+const int SEARCH_TURN_SPEED = 100;
 const int SMOOTH_TURN_SPEED = 500;
 const int FAST_TURN_SPEED = 600;
 const int FAST_RUN_SPEED_MAX = 2500;
@@ -351,7 +351,7 @@ const float BATTERY_MULTIPLIER = (ADC_REF_VOLTS / ADC_FSR / BATTERY_DIVIDER_RATI
 const int MOTOR_MAX_PWM = 255;
 
 // the position in the cell where the sensors are sampled.
-const float SENSING_POSITION = 170.0;
+const float SENSING_POSITION = 150.0;
 
 
 #endif  // CONFIG_H

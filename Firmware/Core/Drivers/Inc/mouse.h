@@ -446,6 +446,8 @@ class Mouse {
       unsigned char newHeading = maze.heading_to_smallest(m_location, m_heading);
       unsigned char hdgChange = (newHeading - m_heading) & 0x3;
       if (m_location != target) {
+        printf("%d \n", hdgChange);
+        LED4_TOGGLE;
         switch (hdgChange) {
           // each of the following actions will finish with the
           // robot moving and at the sensing point ready for the
@@ -642,7 +644,7 @@ class Mouse {
     static unsigned long lastPrintTime = 0;
     unsigned long currentTime = millis();
     if (currentTime - lastPrintTime >= 100) {
-      printf("%s\n", w);
+      printf("%s  ", w);
       lastPrintTime = currentTime;
     }
     switch (m_heading) {

@@ -1,6 +1,7 @@
 #ifndef CORE_H
 #define CORE_H
 
+
 #ifdef __cplusplus
 #include <stdio.h>
 #include <string>

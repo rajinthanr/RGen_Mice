@@ -213,5 +213,7 @@ void wallFollow(bool include_left, bool include_right)
 
     float dif = wall_theta_pid.kp * error + wall_theta_pid.ki * wall_theta_pid.integral + wall_theta_pid.kd * derivative;
 
+    dif = clamp(dif, -STEERING_ADJUST_LIMIT, STEERING_ADJUST_LIMIT);
+
     mouse.steering_adjustment = dif;
 }

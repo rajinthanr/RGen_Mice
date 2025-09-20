@@ -31,7 +31,13 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#define MAX_LINES 100
+extern uint16_t ptr[MAX_LINES];
+extern uint8_t buffer[MAX_LINES][200];
+extern int cur_transmitting;
+extern int cur_storing;
 
+uint8_t __io_putchar(uint8_t ch);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

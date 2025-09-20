@@ -68,17 +68,29 @@ int32_t right_enc;
 float left_speed;
 float right_speed;
 
+
+uint8_t buffer[MAX_LINES][200];
+uint16_t ptr[MAX_LINES];
+int cur_transmitting = 0;
+int cur_storing = 0;
+
 // Redirect printf to UART
-int __io_putchar(int ch)
+uint8_t __io_putchar(uint8_t ch)
 {
-  static uint8_t buffer[200];
-  static int ptr = 0;
-  buffer[ptr++] = ch;
+  buffer[cur_storing][ptr[cur_storing]++] = ch;
   if (ch == '\n')
   {
-    if (huart1.gState == HAL_UART_STATE_READY)
-      HAL_UART_Transmit_IT(&huart1, (uint8_t *)&buffer, ptr);
-    ptr = 0;
+    if (huart1.gState == HAL_UART_STATE_READY){
+      cur_storing+=1;
+      if(cur_storing>=MAX_LINES) cur_storing=0;
+      HAL_UART_TxCpltCallback(&huart1);
+      //HAL_UART_Transmit_IT(&huart1, (uint8_t *)&buffer[cur_transmitting], ptr[cur_transmitting]);
+      //ptr[cur_transmitting] = 0;
+    }
+    else{
+      cur_storing+=1;
+      if(cur_storing>19) cur_storing=0;
+    }
   }
   return ch;
 }
