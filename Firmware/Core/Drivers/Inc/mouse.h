@@ -1,7 +1,7 @@
 #ifndef MOUSE_H
 #define MOUSE_H
+
 #include "config.h"
-//#include "maze.h"
 #include "motion.h"
 #include "wall_handle.h"
 #include "sensor_Function.h"
@@ -11,6 +11,8 @@
 #include "button.h"
 #include "core.h"
 #include "led.h"
+#include "usart.h"
+
 
 /***
  * The Mouse class is really a subclass of a more generic robot. It should
@@ -244,14 +246,25 @@ class Mouse {
 
   //***************************************************************************//
   void turn_left() {
+    motion.set_position(0);
+    motion.wait_until_position(HALF_CELL);
     turn_IP90L();
+    motion.set_position(HALF_CELL);
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.wait_until_position(SENSING_POSITION);
     //turn_smooth(SS90EL);
     m_heading = left_from(m_heading);
   }
 
   //***************************************************************************//
   void turn_right() {
+    motion.set_position(0);
+    motion.wait_until_position(HALF_CELL);
+    //set_steering_mode(STEERING_OFF);
     turn_IP90R();
+    motion.set_position(HALF_CELL);
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.wait_until_position(SENSING_POSITION);
     //turn_smooth(SS90ER);
     m_heading = right_from(m_heading);
   }
@@ -284,7 +297,7 @@ class Mouse {
    * cell.
    */
   void follow_to(Location target) {
-    printf("Follow TO");
+    print("Follow TO");
     m_handStart = true;
     m_location = START;
     m_heading = NORTH;
@@ -295,23 +308,23 @@ class Mouse {
     set_steering_mode(STEERING_OFF);
     motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
-    printf("Off we go...");
+    print("Off we go...");
     motion.wait_until_position(SENSING_POSITION);
     // at the start of this loop we are always at the sensing point
     while (m_location != target) {
       if (switches.button_pressed()) {
         break;
       }
-      printf("\n");
+      print("\n");
       //reporter.log_action_status('-', ' ', m_location, m_heading);
       set_steering_mode(STEER_NORMAL);
       m_location = m_location.neighbour(m_heading);
       update_map();
-      printf(" ");
-      printf("|");
-      printf(" ");
-      printf("|");
-      printf(" ");
+      print(" ");
+      print("|");
+      print(" ");
+      print("|");
+      print(" ");
       char action = '#';
       if (m_location != target) {
         if (!is_wall(L)) {
@@ -333,8 +346,8 @@ class Mouse {
     // we are entering the target cell so come to an orderly
     // halt in the middle of that cell
     stop_at_center();
-    printf("\n");
-    printf("Arrived!  ");
+    print("\n");
+    print("Arrived!  ");
     delay_ms(250);
     disable();
     motion.reset_drive_system();
@@ -355,7 +368,7 @@ class Mouse {
    * @param mm the distance from the start location to the target position
    */
   void run(int mm) {
-    printf("Follow TO");
+    print("Follow TO");
     m_handStart = true;
     m_location = START;
     m_heading = NORTH;
@@ -367,8 +380,8 @@ class Mouse {
     motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
     motion.move(mm, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
-    printf("\n");
-    printf("Arrived!  ");
+    print("\n");
+    print("Arrived!  ");
     delay_ms(250);
     disable();
     motion.reset_drive_system();
@@ -423,13 +436,13 @@ class Mouse {
     }
     motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
-    printf("Off we go...");
-    printf("[");
-    printf("%d", target.x);
-    printf(",");
-    printf("%d", target.y);
-    printf("]");
-    printf("\n");
+    print("Off we go...");
+    print("[");
+    print("%d", target.x);
+    print(",");
+    print("%d", target.y);
+    print("]");
+    print("\n");
 
     motion.wait_until_position(SENSING_POSITION);
     // Each iteration of this loop starts at the sensing point
@@ -437,8 +450,8 @@ class Mouse {
       if (switches.button_pressed()) {  // allow user to abort gracefully
         break;
       }
-      //printf("e\n");
-      //reporter.log_action_status('-', ' ', m_location, m_heading);
+      //print("e\n");
+      log_action_status('-', ' ', m_location, m_heading);
       set_steering_mode(STEER_NORMAL);
       m_location = m_location.neighbour(m_heading);  // the cell we are about to enter
       update_map();
@@ -446,7 +459,7 @@ class Mouse {
       unsigned char newHeading = maze.heading_to_smallest(m_location, m_heading);
       unsigned char hdgChange = (newHeading - m_heading) & 0x3;
       if (m_location != target) {
-        printf("%d \n", hdgChange);
+        print("%d \n", hdgChange);
         LED4_TOGGLE;
         switch (hdgChange) {
           // each of the following actions will finish with the
@@ -471,8 +484,8 @@ class Mouse {
     // halt in the middle of that cell
     stop_at_center();
     disable();
-    printf("\n");
-    printf("Arrived!  ");
+    print("\n");
+    print("Arrived!  ");
     delay_ms(250);
     motion.reset_drive_system();
     set_steering_mode(STEERING_OFF);
@@ -525,7 +538,7 @@ class Mouse {
   /****************************************************************************/
   void wander_to(Location target) {
     target = Location(16, 16);
-    printf("Wandering...");
+    print("Wandering...");
     m_handStart = true;
     m_location = START;
     m_heading = NORTH;
@@ -536,21 +549,21 @@ class Mouse {
     set_steering_mode(STEERING_OFF);
     motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
-    printf("Off we go...\n");
+    print("Off we go...\n");
     motion.wait_until_position(SENSING_POSITION);
     // at the start of this loop we are always at the sensing point
     while (m_location != target) {
       if (switches.button_pressed()) {
         break;
       }
-      printf("\n");
+      print("\n");
       //reporter.log_action_status('-', ' ', m_location, m_heading);
       set_steering_mode(STEER_NORMAL);
       m_location = m_location.neighbour(m_heading);
       update_map();
-      printf(" ");
-      printf("|");
-      printf(" ");
+      print(" ");
+      print("|");
+      print(" ");
       char action = 'W';
       uint8_t hdg = randomHeading();
       if (hdg == LEFT) {
@@ -571,8 +584,8 @@ class Mouse {
     // we are entering the target cell so come to an orderly
     // halt in the middle of that cell
     stop_at_center();
-    printf("\n");
-    printf("Arrived!  ");
+    print("\n");
+    print("Arrived!  ");
     delay_ms(250);
     disable();
     motion.reset_drive_system();
@@ -641,12 +654,8 @@ class Mouse {
     if (rightWall) {
       w[2] = 'R';
     }
-    static unsigned long lastPrintTime = 0;
-    unsigned long currentTime = millis();
-    if (currentTime - lastPrintTime >= 100) {
-      printf("%s  ", w);
-      lastPrintTime = currentTime;
-    }
+    print("%s  ", w);
+
     switch (m_heading) {
       case NORTH:
         maze.update_wall_state(m_location, NORTH, frontWall ? WALL : EXIT);
@@ -698,7 +707,7 @@ class Mouse {
    */
   int search_maze() {
     //wait_for_user_start();
-    printf("Search TO\n");
+    print("Search TO\n");
     m_handStart = true;
     m_location = START;
     m_heading = NORTH;
@@ -836,7 +845,7 @@ class Mouse {
     delay_ms(100);
     motion.reset_drive_system();
     set_steering_mode(STEER_NORMAL);
-    printf("Edge positions:\n");
+    print("Edge positions:\n");
     motion.start_move(FULL_CELL * 4, 500, 0, 1000);
     while (not motion.move_finished()) {
       // if (sensors.lss.value > left_max) {
@@ -861,21 +870,21 @@ class Mouse {
       // }
       // delay_ms(5);
     }
-    //printf("Robot distance: %d\n", encoders.robot_distance());
-    printf("Left: ");
+    //print("Robot distance: %d\n", encoders.robot_distance());
+    print("Left: ");
     if (left_edge_found) {
-      printf("%d\n", BACK_WALL_TO_CENTER + left_edge_position);
+      print("%d\n", BACK_WALL_TO_CENTER + left_edge_position);
     } else {
-      printf("-\n");
+      print("-\n");
     }
 
-    printf("  Right: ");
+    print("  Right: ");
     if (right_edge_found) {
-      printf("%d\n", BACK_WALL_TO_CENTER + right_edge_position);
+      print("%d\n", BACK_WALL_TO_CENTER + right_edge_position);
     } else {
-      printf("-\n");
+      print("-\n");
     }
-    printf("\n");
+    print("\n");
     motion.reset_drive_system();
     set_steering_mode(STEERING_OFF);
     disable();
@@ -941,7 +950,7 @@ class Mouse {
       //reporter.print_wall_sensors();
     }
     switches.wait_for_button_release();
-    printf("\n");
+    print("\n");
     delay_ms(200);
     disable();
   }

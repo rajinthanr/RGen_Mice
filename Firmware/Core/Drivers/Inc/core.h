@@ -11,8 +11,19 @@
 #include "profile.h"
 #include "mouse.h"
 #include "delay.h"
+#include "usart.h"
 #include "maze.h"
 #include "led.h"
+#include "wall_handle.h"
+#include "flash.h"
+#include "drive.h"
+#include "icm.h"
+#include "sensor_Function.h"
+#include "encoder.h"
+#include "adc.h"
+
+#include <cstring>
+#include "button.h"
 extern "C"
 {
 #endif
@@ -21,34 +32,10 @@ extern "C"
 #include "stdio.h"
 #include "stm32f4xx.h"
 
-#include "core.h"
-#include "main.h"
-#include "adc.h"
-#include "led.h"
-#include "sensor_Function.h"
-#include "encoder.h"
-#include "icm.h"
-#include "drive.h"
-#include "usart.h"
-#include "flash.h"
-#include "wall_handle.h"
-// #include "stm32f4xx.h"
-// #include "delay.h"
-
-// #include "button.h"
-// #include <stdio.h>
-#include "usart.h"
-// #include "SPI.h"
-// #include "matrixDisplay.h"
-// #include "pwm.h"
-// #include "encoder.h"
-// #include "buzzer.h"
-#include "sensor_Function.h"
-#include "adc.h"
 
     extern uint8_t is_run;
-    extern bool is_mouse_enable;
-    extern bool is_wall_follow;
+    extern uint8_t is_mouse_enable;
+    extern uint8_t is_wall_follow;
 
     void systick(void);
     void button1_interrupt(void);

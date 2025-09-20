@@ -53,7 +53,7 @@ void readSensor(void)
 
 	// left front sensor
 	L_EM_ON;
-	elapseMicros(60, curt);
+	elapseMicros(80, curt);
 	LSensor = read_L_Sensor - LSensor;
 	L_EM_OFF;
 	if (LSensor < 0) // error check
@@ -61,7 +61,7 @@ void readSensor(void)
 	//elapseMicros(140, curt);
 	// right front sensor
 	R_EM_ON;
-	elapseMicros(120, curt);
+	elapseMicros(160, curt);
 	RSensor = read_R_Sensor - RSensor;
 	R_EM_OFF;
 	if (RSensor < 0)
@@ -70,7 +70,7 @@ void readSensor(void)
 	// diagonal sensors
 	FL_EM_ON;
 	FR_EM_ON;
-	elapseMicros(180, curt);
+	elapseMicros(240, curt);
 	FLSensor = read_FL_Sensor - FLSensor;
 	FRSensor = read_FR_Sensor - FRSensor;
 	FL_EM_OFF;
@@ -80,7 +80,7 @@ void readSensor(void)
 	if (FRSensor < 0)
 		FRSensor = 0;
 
-	readVolMeter();
+	//readVolMeter();
 
 	LSensor = LSensor * reflectionRate / 1000;
 	RSensor = RSensor * reflectionRate / 1000;
@@ -139,7 +139,7 @@ void collisionAvoidance(void)
 {
 	if (abs(get_accY()) > 40) // If acceleration in Y direction exceeds 2 m/s^2
 	{
-		printf("Collision detected!");
+		print("Collision detected!");
 		safety_stop(100);
 	}
 }
@@ -162,7 +162,7 @@ void lowBatCheck(void)
 {
 	if (cell_1 < 3500 || cell_2 < 3500) // alert when battery Voltage lower than 7V
 	{
-		printf("Low battery detected!");
+		print("Low battery detected!");
 		safety_stop();
 	}
 }

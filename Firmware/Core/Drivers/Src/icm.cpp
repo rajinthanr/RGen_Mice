@@ -76,11 +76,11 @@ void icm_initialize()
 	HAL_Delay(100);
 	// HAL_SPI_Transmit(&hspi3, &buffer, 1, 100);
 
-	uint16_t accel_fs_sel = 0x40; // ACCEL_CONFIG: FS_SEL=2 (±8g), bits [3:2]=10
-	uint16_t gyro_fs_sel = 0x00;  // GYRO_CONFIG: FS_SEL=0 (±2000 dps), bits [4:3]=00	
+	uint8_t accel_fs_sel = 0x40; // ACCEL_CONFIG: FS_SEL=2 (±8g), bits [3:2]=10
+	uint8_t gyro_fs_sel = 0x00;  // GYRO_CONFIG: FS_SEL=0 (±2000 dps), bits [4:3]=00
 
 	// Write ACCEL_CONFIG register (address 0x14)
-	uint16_t accel_config_reg = 0x50;
+	uint8_t accel_config_reg = 0x50;
 	cs(0);
 	HAL_SPI_Transmit(&hspi3, &accel_config_reg, 1, 100);
 	HAL_SPI_Transmit(&hspi3, &accel_fs_sel, 1, 100);
@@ -88,7 +88,7 @@ void icm_initialize()
 	HAL_Delay(100);
 
 	// Write GYRO_CONFIG register (address 0x11)
-	uint16_t gyro_config_reg = 0x4F;
+	uint8_t gyro_config_reg = 0x4F;
 	cs(0);
 	HAL_SPI_Transmit(&hspi3, &gyro_config_reg, 1, 100);
 	HAL_SPI_Transmit(&hspi3, &gyro_fs_sel, 1, 100);

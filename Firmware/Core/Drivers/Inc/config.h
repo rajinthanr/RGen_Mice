@@ -4,6 +4,8 @@
 
 #define NAME "MICE"
 
+#include "core.h"
+
 //***** SENSOR CALIBRATION **************************************************//
 /**
 RAW side sensor values when robot is centred in a cell and no wall ahead
@@ -250,7 +252,7 @@ const float ROT_KD = LOOP_FREQUENCY * (8 * ROT_TM - ROT_TD) / (ROT_KM * ROT_TD);
 // controller constants for the steering controller
 const float STEERING_KP = 0.25;
 const float STEERING_KD = 0.00;
-const float STEERING_ADJUST_LIMIT = 40.0;  // deg/s
+const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
 
 // encoder polarity is either 1 or -1 and is used to account for reversal of the encoder phases
 #define ENCODER_LEFT_POLARITY (-1)

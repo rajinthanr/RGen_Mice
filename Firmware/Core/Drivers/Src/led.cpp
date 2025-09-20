@@ -1,5 +1,5 @@
 #include "led.h"
-#include "main.h"
+#include "core.h"
 
 void LED_Configuration(void) {
 		GPIO_InitTypeDef GPIO_InitStruct = {0};

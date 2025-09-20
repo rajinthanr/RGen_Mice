@@ -23,8 +23,6 @@
 /* USER CODE BEGIN Includes */
 
 #include "core.h"
-#include "stdio.h"
-#include "usart.h"
 
 // #include "icm.h"
 // #include "interface.h"
@@ -74,8 +72,8 @@ uint16_t ptr[MAX_LINES];
 int cur_transmitting = 0;
 int cur_storing = 0;
 
-// Redirect printf to UART
-uint8_t __io_putchar(uint8_t ch)
+// Redirect print to UART
+uint8_t __io_putchar(char ch)
 {
   buffer[cur_storing][ptr[cur_storing]++] = ch;
   if (ch == '\n')
@@ -89,7 +87,7 @@ uint8_t __io_putchar(uint8_t ch)
     }
     else{
       cur_storing+=1;
-      if(cur_storing>19) cur_storing=0;
+      if(cur_storing>=MAX_LINES) cur_storing=0;
     }
   }
   return ch;

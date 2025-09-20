@@ -1,7 +1,7 @@
 #include "usart.h"
-#include "core.h"
-#include "profile.h"
-#include "motion.h"
+#include "mouse.h"
+#include "maze.h"
+#include "variables.h"
 #include <cstdarg>
 
 
@@ -12,7 +12,7 @@ uint16_t rxIndex = 0;
 extern UART_HandleTypeDef huart1; // Change to your UART instance\
 
 
-void print2(const char *format, ...)
+void print(const char *format, ...)
 {
     char buffer[200]; // Adjust size as needed
     va_list args;
@@ -25,7 +25,7 @@ void print2(const char *format, ...)
         if (len > sizeof(buffer))
             len = sizeof(buffer); // Truncate if necessary
         for(int i=0;i<len;i++){
-            __io_putchar(buffer[i]);
+            uint8_t ss = __io_putchar(buffer[i]);
         }
     }
 }
@@ -38,6 +38,7 @@ void UART_Configurations()
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     //if (huart->Instance == USART1)
+    if (huart1.gState == HAL_UART_STATE_READY)
     {
         if(cur_transmitting != cur_storing)
         {
@@ -137,7 +138,7 @@ void debug()
 
         else if (strcmp(command, "turn") == 0)
         {
-            printf("Turning to %.2f degrees\r\n", value);
+            print("Turning to %.2f degrees\r\n", value);
             is_run = 1;
         }
     }
@@ -145,14 +146,19 @@ void debug()
     uint8_t pre_state = is_sensor_active;
     enable();
     readSensor();
-        printf("%d  %d  %d  %d  w %.2f angle %.2f a %.2f b1 %.3f b2 %.3f lenc %d renc %d for %.2f\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1/1000, cell_2/1000, getLeftEncCount(), getRightEncCount(), get_forward_dis());
+        print("%d  %d  %d  %d  w %.2f angle %.2f a %.2f b1 %.3f b2 %.3f lenc %d renc %d for %.2f\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1/1000, cell_2/1000, getLeftEncCount(), getRightEncCount(), get_forward_dis());
     if(!pre_state) disable();
     }
-        else if (strcmp(cmdBuffer, "dis") == 0)
-    {   
+
+
+     else if (strcmp(cmdBuffer, "dis") == 0)
+    {   uint8_t pre_state = is_sensor_active;
+        enable();
+        readSensor();
         for (int i = 0; i < 4; i++)
-            printf("  %.2f  |", dis_reading[i]);
-        printf("\r\n");
+            print("  %.2f  |", dis_reading[i]);
+        print("\r\n");
+        if(!pre_state) disable();
     }
     else if (strcmp(cmdBuffer, "run") == 0)
     {
@@ -166,7 +172,7 @@ void debug()
         is_wall_follow = 0;
         drive(0, 0);
         is_run = 0;
-        printf("Emergency stop triggered!\r\n");
+        print("Emergency stop triggered!\r\n");
         // Add any additional emergency stop logic here
     }
     else if (strcmp(command, "reset") == 0)
@@ -176,12 +182,12 @@ void debug()
     else if (strcmp(command, "calibrate_wall") == 0)
     {
         is_calibrate = 1;
-        printf("Calibrating Wall\n");
+        print("Calibrating Wall\n");
     }
     else if (strcmp(command, "wall_front") == 0)
     {
         is_wall_front = 1;
-        printf("Wall Front: %d\r\n", is_wall_front);
+        print("Wall Front: %d\r\n", is_wall_front);
         motion.start_move(60, mouse.max_linear_speed, 0, mouse.max_linear_accel);
         motion.start_turn(60, mouse.max_angular_speed, 0, mouse.max_angular_accel);
     }
@@ -192,23 +198,23 @@ void debug()
         {
             drive(0, 0);
         }
-        printf("Mouse Enable: %d\r\n", is_mouse_enable);
+        print("Mouse Enable: %d\r\n", is_mouse_enable);
     }
     else if (strcmp(command, "wall_follow") == 0)
     {
         motion.start_move(600, mouse.max_linear_speed, 0, mouse.max_linear_accel);
         is_wall_follow = !is_wall_follow;
-        printf("Wall Follow: %d\r\n", is_wall_follow);
+        print("Wall Follow: %d\r\n", is_wall_follow);
     }
     else if (strcmp(command, "map") == 0)
     {
-      for(int i=0;i<30;i++){
-      printf("Map\n");
-      printf("sidfhjglikasdhjfgopiasdsdfoj\n");
-      printf("Ready...\n");
+      for(int i=0;i<1;i++){
+      print("Map\n");
+      print("PLAIN\n");
+      print("Ready...\n");
       }
-        int style = PLAIN;
-       // print_maze(style);
+        int style = COSTS;
+        print_maze(style);
     }
 
 }
@@ -221,9 +227,9 @@ void debug()
 
 #define POST 'o'
 #define ERR '?'
-#define GAP "   "
+#define GAP "     "
 #define H_WALL "---"
-#define H_EXIT "   "
+#define H_EXIT "    -"
 #define H_UNKN "···"
 #define H_VIRT "###"
 #define V_WALL '|'
@@ -242,39 +248,39 @@ void print_justified(int32_t value, int width) {
       w--;
     }
     while (w > 0) {
-      printf(" ");
+      print("  ");
       --w;
     }
-    printf("%d", value);
+    print("%d", value);
   }
 
   void print_h_wall(uint8_t state) {
     if (state == EXIT) {
-      printf("%s",H_EXIT);
+      print("%s",H_EXIT);
     } else if (state == WALL) {
-      printf("%s",H_WALL);
+      print("%s",H_WALL);
     } else if (state == VIRTUAL) {
-      printf("%s",H_VIRT);
+      print("%s",H_VIRT);
     } else {
-      printf("%s",H_UNKN);
+      print("%s",H_UNKN);
     }
   }
   void printNorthWalls(int y) {
     for (int x = 0; x < MAZE_WIDTH; x++) {
-      printf("%c",POST);
+      print("%c",POST);
       WallInfo walls = maze.walls(Location(x, y));
       print_h_wall(walls.north & maze.get_mask());
     }
-    printf("%c\n",POST);
+    print("%c\n",POST);
   }
 
   void printSouthWalls(int y) {
     for (int x = 0; x < MAZE_WIDTH; x++) {
-      printf("%c",POST);
+      print("%c",POST);
       WallInfo walls = maze.walls(Location(x, y));
       print_h_wall(walls.south & maze.get_mask());
     }
-    printf("%c\n",POST);
+    print("%c\n",POST);
   }
 
   void print_maze(int style) {
@@ -288,13 +294,13 @@ void print_justified(int32_t value, int width) {
         WallInfo walls = maze.walls(location);
         uint8_t state = walls.west & maze.get_mask();
         if (state == EXIT) {
-          printf("%c",V_EXIT);
+          print("%c",V_EXIT);
         } else if (state == WALL) {
-          printf("%c",V_WALL);
+          print("%c",V_WALL);
         } else if (state == VIRTUAL) {
-          printf("%c",V_VIRT);
+          print("%c",V_VIRT);
         } else {
-          printf("%c",V_UNKN);
+          print("%c",V_UNKN);
         }
         if (style == COSTS) {
           print_justified((int)maze.cost(location), 3);
@@ -307,15 +313,41 @@ void print_justified(int32_t value, int width) {
           if (direction != BLOCKED) {
             arrow = dirChars[direction];
           }
-          printf(" ");
-          printf("%c", arrow);
-          printf(" ");
+          print(" ");
+          print("%c", arrow);
+          print(" ");
         } else {
-          printf("%s", GAP);
+          print("%s", GAP);
         }
       }
-      printf("%c\n", V_WALL);
+      print("%c\n", V_WALL);
     }
     printSouthWalls(0);
-    printf("\n");
+    print("\n");
+  }
+
+const char hdg_letters[] = "NESW";
+
+    void log_action_status(char action, char note, Location location, Heading heading) {
+    print("{");
+    print("%c", action);
+    print("%c", note);
+    print("[");
+    print("%d", location.x);
+    print(",");
+    print("%d", location.y);
+    print("]");
+    print(" ");
+    if (heading < HEADING_COUNT) {
+      print("%c", hdg_letters[heading]);
+    } else {
+      print("!");
+    }
+    print_justified(get_front_sum(), 4);
+    print("@");
+    print_justified((int)motion.position(), 4);
+    print(" ");
+    // print_walls();
+    print("}");
+    print(" ");
   }

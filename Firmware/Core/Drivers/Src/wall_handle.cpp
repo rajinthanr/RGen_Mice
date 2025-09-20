@@ -3,6 +3,7 @@
 #include "math.h"
 #include "delay.h"
 #include "drive.h"
+#include "usart.h"
 
 
 int wall_state, pre_wall_state;
@@ -82,6 +83,7 @@ void cal_initial_wall()
     LED4_OFF;
     LED3_OFF;
     if(!pre_state) disable();
+    print("Calibration done\n");
 }
 
 void get_cal_initial_wall()
@@ -94,9 +96,9 @@ void get_cal_initial_wall()
     {
         initial_wall[a] = getInt(FLASH_CAL_INIT_WALL + a);
         // wall_threshold[a] = 200;
-        printf("%d ", initial_wall[a]);
+        print("%d ", initial_wall[a]);
     }
-    printf("        \n");
+    print("        \n");
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -104,7 +106,7 @@ void get_cal_initial_wall()
 bool is_wall(int w)
 {
     if (w == FL || w == FR)
-        return (dis_reading[FL] + dis_reading[FR]) <= 20;
+        return (dis_reading[FL] + dis_reading[FR]) <= 30;
     return dis_reading[w] <= 10;
 }
 

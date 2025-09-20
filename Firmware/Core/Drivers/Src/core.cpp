@@ -1,19 +1,5 @@
-#include "core.h"
-#include "main.h"
-#include "delay.h"
-#include "adc.h"
-#include "led.h"
-#include "sensor_Function.h"
-#include "encoder.h"
-#include "icm.h"
-#include "drive.h"
 #include "usart.h"
-#include <cstring>
-#include "flash.h"
-#include "wall_handle.h"
-//#include "mouse.h"
-#include "button.h"
-
+#include "core.h"
 
 
 Motion motion;                            // high level motion operations
@@ -28,20 +14,21 @@ uint8_t is_run = 0;
 
 float left_measured;
 float right_measured;
-bool is_mouse_enable = 0;
-bool is_wall_follow = 0;
+uint8_t is_mouse_enable = 0;
+uint8_t is_wall_follow = 0;
 
-// Retarget printf to UART
+// Retarget print to UART
 
 void systick(void)
 {
     if(Millis<2000) return;
-    readGyro();
-    //readSensor();
-    HAL_UART_TxCpltCallback(&huart1);
+    
+    //HAL_UART_TxCpltCallback(&huart1);
 
     if (is_mouse_enable)
         {
+            readGyro();
+            readSensor();
             mouse.linear_speed = motion.velocity();
             mouse.angular_speed = motion.omega();
             drive_closed_loop_update();
@@ -51,7 +38,7 @@ void systick(void)
 }
 int core(void)
 {
-    printf("initialing..\r\n");
+    print("initialing..\r\n");
    // delay_ms(50);
     init_flash();
     Wall_Configuration();
@@ -64,7 +51,7 @@ int core(void)
     Encoder_Configration();
     
     ADC_Config();
-    printf("Core initialized\r\n");
+    print("Core initialized\r\n");
 
 
 
@@ -77,14 +64,14 @@ int core(void)
     {
         LED2_ON;
         delay_ms(1);
-        //readSensor();
+        readSensor();
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
         { // 500ms = 2 times per second
             lowBatCheck();
             lastTick = HAL_GetTick();
-            // printf("L %d R %d FL %d FR %d aSpeed %.2f angle %.2f voltage %d lenc %d renc %d\r\n", LSensor, RSensor, FLSensor, FRSensor, get_gyroZ(), angle, voltage, getLeftEncCount(), getRightEncCount());
+            // print("L %d R %d FL %d FR %d aSpeed %.2f angle %.2f voltage %d lenc %d renc %d\r\n", LSensor, RSensor, FLSensor, FRSensor, get_gyroZ(), angle, voltage, getLeftEncCount(), getRightEncCount());
         }
         
 

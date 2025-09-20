@@ -37,7 +37,7 @@ extern uint8_t buffer[MAX_LINES][200];
 extern int cur_transmitting;
 extern int cur_storing;
 
-uint8_t __io_putchar(uint8_t ch);
+uint8_t __io_putchar(char ch);
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
