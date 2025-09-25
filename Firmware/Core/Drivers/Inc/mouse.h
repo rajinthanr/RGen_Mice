@@ -46,7 +46,7 @@ class Mouse {
     float angular_speed = 0.0f;
     float target_linear_speed = 0.0f;
     float target_angular_speed = 0.0f;
-    float max_linear_speed = 600.0f;  // Example: 800 mm/s
+    float max_linear_speed = 100.0f;  // Example: 800 mm/s
     float max_angular_speed = 360.0f;   // Example: 360 deg/s
     float max_linear_accel = 600.0f;     // Example: 2000 mm/s^2
     float max_angular_accel = 360.0f;    // Example: 1800 deg/s^2
@@ -455,7 +455,11 @@ class Mouse {
       motion.move(-BACK_WALL_TO_CENTER, SEARCH_SPEED / 4, 0, SEARCH_ACCELERATION / 2);
       set_steering_mode(STEERING_OFF);
     }
-    motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    LED1_TOGGLE;
+    delay_ms(1000);
+    LED1_TOGGLE;
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
     print("Off we go...");
     print("[");
@@ -481,6 +485,7 @@ class Mouse {
       if(newHeading == BLOCKED) {
         // we are stuck - no way out
         print("Stuck!\n");
+        print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
         motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
         break;
       }

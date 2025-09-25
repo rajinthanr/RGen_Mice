@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 
+#include "config.h"
 #include "motion.h"
 #include "profile.h"
 #include "mouse.h"

@@ -27,24 +27,6 @@ void Wall_Configuration(void)
     get_cal_initial_wall();
 }
 
-float dist(int ir_num)
-{
-    if (reading[ir_num] < 10)
-        return 1000;
-
-    else
-    {
-        float ratio = 1.0 * initial_wall[ir_num] / reading[ir_num];
-        if (ratio >= 0)
-        {
-            return 5.0 * sqrt(ratio);
-        }
-        else
-        {
-            return 9000;
-        }
-    }
-}
 
 void cal_initial_wall()
 {
@@ -103,13 +85,6 @@ void get_cal_initial_wall()
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-bool is_wall(int w)
-{
-    if (w == FL || w == FR)
-        return (dis_reading[FL] + dis_reading[FR]) <= 30;
-    return dis_reading[w] <= 10;
-}
-
 float clamp(float value, float min, float max)
 {
     if (value < min)
@@ -121,8 +96,10 @@ float clamp(float value, float min, float max)
 
 float wallFront(int band)
 {
-    float error_l = dis_reading[FL] - 5;
-    float error_r = dis_reading[FR] - 5;
+    float error_l = dis_reading[FL] - SIDE_WALL_DISTANCE_CAL;
+    float error_r = dis_reading[FR] - SIDE_WALL_DISTANCE_CAL;
+
+    error_l/=10;
 
     // error_theta: difference between left and right front wall distances
     float error_theta = error_r - error_l;
@@ -179,13 +156,13 @@ void wallFollow(bool include_left, bool include_right)
     {
         // digitalWrite(LED_PIN, HIGH);
         wall_state = 1;
-        error = dis_reading[R] - 5;
+        error = dis_reading[R] - SIDE_WALL_DISTANCE_CAL;
     }
 
     else if (include_left && is_wall(L) && !is_wall(R))
     {
         wall_state = 2;
-        error = 5 - dis_reading[L];
+        error = SIDE_WALL_DISTANCE_CAL - dis_reading[L];
     }
     else if (!is_wall(L) && !is_wall(R))
     {
@@ -198,7 +175,7 @@ void wallFollow(bool include_left, bool include_right)
     // Use error as input to wall theta PID using a new PID object
     static PID wall_theta_pid = {50.0f, 0.8f, 0.0f, 0, 0};
 
-    error = -error;
+    error = -error/10;
 
     wall_theta_pid.integral += error;
     float derivative = error - wall_theta_pid.previous_error;

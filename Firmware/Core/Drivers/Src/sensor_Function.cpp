@@ -31,6 +31,37 @@ uint8_t LEFT_START = 1;
 uint8_t RIGHT_START = 2;
 
 
+float dist(int ir_num)
+{
+    if (reading[ir_num] < 10)
+        return 1000;
+
+    else
+    {
+        float ratio = 1.0 * initial_wall[ir_num] / reading[ir_num];
+        if (ratio >= 0)
+        {
+			float distance = 0;
+			if(ir_num == L || ir_num == R) distance = SIDE_WALL_DISTANCE_CAL*sqrt(ratio);
+			else distance = FRONT_WALL_DISTANCE_CAL*sqrt(ratio);
+
+         return distance;
+        }
+        else
+        {
+            return 9000;
+        }
+    }
+}
+
+
+bool is_wall(int w)
+{
+    if (w == FL || w == FR)
+        return (dis_reading[FL] + dis_reading[FR]) <= 400;
+    return dis_reading[w] <= 120;
+}
+
 void set_steering_mode(uint8_t mode) {
 	if(mouse.steering_mode == GYRO_OFF){
 		angle = mouse.target_angle;
@@ -114,13 +145,9 @@ float get_front_sum()
 void readGyro(void)
 { // k=19791(sum for sample in 1 second)    101376287 for 50 seconds with 5000 samples
 	aSpeed = get_gyroZ();
-//	static uint64_t last_time = 0;
-//	uint64_t now = micros();
-//	float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f;
 
-	float dt = 0.001;
-	angle += aSpeed * dt;
-	//.last_time = now;
+	float LOOP_INTERVAL = 0.001;
+	angle += aSpeed * LOOP_INTERVAL;
 }
 
 void safety_stop(int duration = 100)
@@ -209,11 +236,11 @@ void disable(){
 }
 
 uint8_t occluded_left() {
-    return dis_reading[FL] < 5 && dis_reading[FR] > 5 ;
+    return dis_reading[FL] < 50 && dis_reading[FR] > 50 ;
   }
 
 uint8_t occluded_right() {
-    return dis_reading[FL] > 5 && dis_reading[FR] < 5;
+    return dis_reading[FL] > 50 && dis_reading[FR] < 50;
   }
 
 

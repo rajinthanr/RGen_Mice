@@ -124,7 +124,6 @@ void Maze::set_mask(const MazeMask mask) { m_mask = mask; }
 MazeMask Maze::get_mask() const { return m_mask; }
 
 uint16_t Maze::neighbour_cost(const Location cell, const Heading heading) const {
-    if (!is_exit(cell, heading)) return MAX_COST;
     Location next_cell = cell.neighbour(heading);
     return m_cost[next_cell.x][next_cell.y];
 }
@@ -166,19 +165,19 @@ Heading Maze::heading_to_smallest(const Location cell, const Heading start_headi
     uint16_t best_cost = cost(cell);
 
     uint16_t cost_val = neighbour_cost(cell, next_heading);
-    if (cost_val < best_cost) { best_cost = cost_val; best_heading = next_heading; }
+    if (cost_val < best_cost && is_exit(cell, next_heading)) { best_cost = cost_val; best_heading = next_heading; }
 
     next_heading = right_from(start_heading);
     cost_val = neighbour_cost(cell, next_heading);
-    if (cost_val < best_cost) { best_cost = cost_val; best_heading = next_heading; }
+    if (cost_val < best_cost && is_exit(cell, next_heading)) { best_cost = cost_val; best_heading = next_heading; }
 
     next_heading = left_from(start_heading);
     cost_val = neighbour_cost(cell, next_heading);
-    if (cost_val < best_cost) { best_cost = cost_val; best_heading = next_heading; }
+    if (cost_val < best_cost && is_exit(cell, next_heading)) { best_cost = cost_val; best_heading = next_heading; }
 
     next_heading = behind_from(start_heading);
     cost_val = neighbour_cost(cell, next_heading);
-    if (cost_val < best_cost) { best_cost = cost_val; best_heading = next_heading; }
+    if (cost_val < best_cost && is_exit(cell, next_heading)) { best_cost = cost_val; best_heading = next_heading; }
 
     if (best_cost == MAX_COST) best_heading = BLOCKED;
     return best_heading;

@@ -17,11 +17,9 @@ extern "C"
 
     void Wall_Configuration(void);
     float sqrtf(float x);
-    float dist(int ir_num);
     void cal_initial_wall();
     void get_cal_initial_wall();
     float wallFront(int band);
-    bool is_wall(int w);
     void wallFollow(bool include_left, bool include_right);
 
 #ifdef __cplusplus

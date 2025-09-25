@@ -146,7 +146,8 @@ void debug()
     uint8_t pre_state = is_sensor_active;
     enable();
     readSensor();
-        print("%d  %d  %d  %d  w %.2f angle %.2f a %.2f b1 %.3f b2 %.3f lenc %d renc %d for %.2f\r\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1/1000, cell_2/1000, getLeftEncCount(), getRightEncCount(), get_forward_dis());
+        print("-------\n%d  %d  %d  %d  \nOmega: %.2f Theta: %.2f Accelerration: %.2f \ncell1: %.3f cel2: %.3f \nlenc %d renc %d traveled: %.2f\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1/1000, cell_2/1000, getLeftEncCount(), getRightEncCount(), get_forward_dis());
+        print("angular speed: %.2f\r\n-------\n", mouse.angular_speed);
     if(!pre_state) disable();
     }
 

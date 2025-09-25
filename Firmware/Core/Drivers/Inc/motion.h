@@ -1,10 +1,11 @@
 #ifndef MOTION_H
 #define MOTION_H
 
-#include "core.h"
+
+#include "profile.h"
 #include "delay.h"
 #include "drive.h"
-#include "profile.h"
+
 
 /***
  *

@@ -4,7 +4,7 @@
 
 #define NAME "MICE"
 
-#include "core.h"
+#include "stdint.h"
 
 //***** SENSOR CALIBRATION **************************************************//
 /**
@@ -94,36 +94,18 @@ const int EXTRA_WALL_ADJUST = 6;
 
 #endif
 
-//***** IO PINS *****************************************************//
-// the BASIC sensor board has two LEDs
-// const int LED_LEFT = USER_IO;
-// const int LED_RIGHT = EMITTER_A;
-// const int LED_USER = USER_IO;
-// but only one emitter pin
-// const int EMITTER_FRONT = EMITTER_B;
-// const int EMITTER_DIAGONAL = EMITTER_B;
-
-// the ADVANCED sensor board has only one LED so use the value twice
-//const int LED_LEFT = USER_IO;
-//const int LED_RIGHT = USER_IO;
-//const int LED_USER = USER_IO;
-//// but two emitter pins
-//const int EMITTER_FRONT = EMITTER_A;
-//const int EMITTER_DIAGONAL = EMITTER_B;
-
-//***** SENSOR HARDWARE *****************************************************//
-// the ADC channels corresponding to the sensor inputs. There are 8 available
-// Channels 0..3 are normally used for sensors.
-// Channels 4 and 5 are available if you do not want to add an I2C device
-// Channel 6 is pre-allocated to the Battery monitor
-// Channel 7 is re-allocated to the function switch and button
-
-// NOTE - these are the AnalogueConverter channel indexes, not necessariy the
-// hardware ADC channel numbers
-
-
+//***************************************************************************//
 const float FULL_CELL = 192.0f;
 const float HALF_CELL = FULL_CELL / 2.0;
+const float POLE_WIDTH = 12.0f;
+
+// the position in the cell where the sensors are sampled.
+const float SENSING_POSITION = 150.0;
+
+//***** SENSOR DISTANCE *****************************************************//
+
+const int FRONT_WALL_DISTANCE_CAL = 100;  // mm
+const int SIDE_WALL_DISTANCE_CAL = 75;   // mm
 
 // ADVANCED SENSOR
 const int RFS_ADC_CHANNEL = 0;
@@ -131,14 +113,6 @@ const int RSS_ADC_CHANNEL = 1;
 const int LSS_ADC_CHANNEL = 2;
 const int LFS_ADC_CHANNEL = 3;
 
-// BASIC SENSOR - just repeat the front sensor to make the code cleaner
-// #define RFS_ADC_CHANNEL 1
-// #define RSS_ADC_CHANNEL 0
-// #define LSS_ADC_CHANNEL 2
-// #define LFS_ADC_CHANNEL 1
-// there are two other ADC channels used by the robot
-const int SWITCHES_ADC_CHANNEL = 6;
-const int BATTERY_ADC_CHANNEL = 7;
 //***************************************************************************//
 const uint32_t BAUDRATE = 115200;
 
@@ -151,7 +125,7 @@ const int REPORTING_INTERVAL = 10;
 //***************************************************************************//
 // Some physical constants that are likely to be robot-specific
 // with robot against back wall, how much travel is there to the cell center?
-const int BACK_WALL_TO_CENTER = 48;
+const float BACK_WALL_TO_CENTER = 45.0f;
 
 //***************************************************************************//
 // We need to know about the drive mechanics.
@@ -160,9 +134,9 @@ const int BACK_WALL_TO_CENTER = 48;
 // the pulses.
 // Finally, move the mouse in a straight line through 1000mm of travel to work
 // out the wheel diameter.
-const float WHEEL_DIAMETER = 31.03;
-const float ENCODER_PULSES = 12.00;
-const float GEAR_RATIO = 19.540;
+const float WHEEL_DIAMETER = 18;
+const float ENCODER_PULSES = 40;
+const float GEAR_RATIO = 6;
 
 // Mouse radius is the distance between the contact patches of the drive wheels.
 // A good starting approximation is half the distance between the wheel centres.
@@ -170,7 +144,7 @@ const float GEAR_RATIO = 19.540;
 // small amount. AFTER you have the wheel diameter and gear ratio calibrated,
 // have the mouse turn in place and adjust the MOUSE_RADIUS until these turns are
 // as accurate as you can get them
-const float MOUSE_RADIUS = 37.95;  // 39.50; // Adjust on test
+const float MOUSE_RADIUS = 55/2;  // Adjust on test
 
 // The robot is likely to have wheels of different diameters or motors of slightly
 // different characteristics and that must be compensated for if the robot is to
@@ -267,7 +241,8 @@ const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
 
 //***** PERFORMANCE CONSTANTS************************************************//
 // search and run speeds in mm/s and mm
-const int SEARCH_SPEED = 200;
+//const int SEARCH_SPEED = 200;
+#define SEARCH_SPEED mouse.max_linear_speed
 const int SEARCH_ACCELERATION = 2000;
 const int SEARCH_TURN_SPEED = 100;
 const int SMOOTH_TURN_SPEED = 500;
@@ -351,9 +326,6 @@ const float ADC_REF_VOLTS = 5.0;  // Reference voltage of ADC
 const float BATTERY_MULTIPLIER = (ADC_REF_VOLTS / ADC_FSR / BATTERY_DIVIDER_RATIO);
 
 const int MOTOR_MAX_PWM = 255;
-
-// the position in the cell where the sensors are sampled.
-const float SENSING_POSITION = 160.0;
 
 
 #endif  // CONFIG_H

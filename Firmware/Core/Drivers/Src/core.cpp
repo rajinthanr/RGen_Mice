@@ -1,4 +1,3 @@
-#include "usart.h"
 #include "core.h"
 
 

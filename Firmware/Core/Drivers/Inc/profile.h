@@ -1,7 +1,7 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 
-#include "core.h"
+#include "config.h"
 #include "delay.h"
 #include "math.h"
 
@@ -127,7 +127,7 @@ private:
 
   void wait_until_finished() {
     while (m_state != PS_FINISHED) {
-      delay_ms(2);
+      delay_ms(1);
     }
   }
 
@@ -183,16 +183,11 @@ private:
 
   // update is called from within systick and should be safe from interrupts
   void update() {
-   static uint32_t last_time = 0;
-    uint32_t now = micros();
-    float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
-    last_time = now;
-    dt = 0.001;
 
     if (m_state == PS_IDLE) {
       return;
     }
-    float delta_v = m_acceleration * dt;
+    float delta_v = m_acceleration * LOOP_INTERVAL;
     float remaining = abs(m_final_position) - abs(m_position);
     if (m_state == PS_ACCELERATING) {
       if (remaining < get_braking_distance()) {
@@ -202,7 +197,7 @@ private:
           // acceleration. It is just a small velicity that ensures that the motion continues
           // past the finish point in case floating point rounding prevents that happening.
           // It is a nasty hack I keep meaning to find a more tidy solution for.
-          m_target_speed = m_sign * 5.0f;  // magic number to make sure we reach zero
+          m_target_speed = m_sign * 0.0f;//5.0f;  // magic number to make sure we reach zero
         } else {
           m_target_speed = m_final_speed;
         };
@@ -222,7 +217,7 @@ private:
       }
     }
     // increment the position
-    m_position += m_speed * dt;
+    m_position += m_speed * LOOP_INTERVAL;
     // The number is a hack to ensure floating point rounding errors do not prevent the
     // loop termination. The units are mm and independent of the encoder resolution.
     // I figure that being within 1/8 of a mm will be close enough.

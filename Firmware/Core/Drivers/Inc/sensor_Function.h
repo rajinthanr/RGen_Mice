@@ -55,6 +55,8 @@ extern "C"
 #define FL_EM_ON HAL_GPIO_WritePin(TR_FL_GPIO_Port, TR_FL_Pin, GPIO_PIN_SET);
 #define FL_EM_OFF HAL_GPIO_WritePin(TR_FL_GPIO_Port, TR_FL_Pin, GPIO_PIN_RESET);
 
+    float dist(int ir_num);
+    bool is_wall(int w);
     void readSensor(void);
     float get_front_sum();
     void readGyro(void);

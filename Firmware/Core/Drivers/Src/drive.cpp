@@ -40,19 +40,12 @@ float position_controller() {
     const float KD = 0.01f; // Derivative gain
     const float KI = 0.1f;  // Integral gain
 
-    static uint32_t last_time = 0;
-    uint32_t now = micros();
-    float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
-    last_time = now;
-
-    dt = 0.001;
-
-    mouse.target_dis += (mouse.linear_speed + mouse.speed_adj) * dt;
+    mouse.target_dis += (mouse.linear_speed + mouse.speed_adj) * LOOP_INTERVAL;
     mouse.speed_adj = 0; // Reset after use
     float error = mouse.target_dis - get_forward_dis();
     float diff = error - previous_error;
     previous_error = error;
-    I += error * dt;
+    I += error * LOOP_INTERVAL;
 
     if(I > 100) I = 100; // Anti-windup
     if(I < -100) I = -100;
@@ -68,22 +61,18 @@ float position_controller() {
     const float KD = 3.0f; // Derivative gain
     const float KI = 0.3f;  // Integral gain
 
-//    static uint32_t last_time = 0;
-//    uint32_t now = micros();
-//    float dt = (last_time == 0) ? 0.01f : (now - last_time) / 1000000.0f; // default 10ms on first call
-//    last_time = now;
-    float dt = 0.001;
+    float LOOP_INTERVAL = 0.001;
     
-    mouse.target_angle += mouse.angular_speed  * dt;
+    mouse.target_angle += mouse.angular_speed  * LOOP_INTERVAL;
     if(mouse.steering_mode != STEERING_OFF){
         wallFollow(true,true);
-    mouse.target_angle +=  mouse.steering_adjustment * dt;
+    mouse.target_angle +=  mouse.steering_adjustment * LOOP_INTERVAL;
     }
     mouse.steering_adjustment = 0; // Reset after use
     float error = mouse.target_angle - angle;
     float diff = error - previous_error;
     previous_error = error;
-    I += error * dt;
+    I += error * LOOP_INTERVAL;
 
     if(I > 10) I = 10; // Anti-windup
     if(I < -10) I = -10;
