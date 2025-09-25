@@ -120,17 +120,18 @@ void readGyro(void)
 	//.last_time = now;
 }
 
-void safety_stop(int duration = 400)
+void safety_stop(int duration = 100)
 {
 	drive_disable();
 	drive(0, 0);
+	ALL_LED_OFF;
 
 	while (1)
 	{
 		ALL_LED_OFF;
-		delay_ms(duration);
+		delay_ms(duration*4);
 
-		ALL_LED_ON;
+		LED3_ON;
 		delay_ms(duration);
 	}
 }

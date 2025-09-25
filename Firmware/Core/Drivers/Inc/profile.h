@@ -126,9 +126,9 @@ private:
   }
 
   void wait_until_finished() {
-    //while (m_state != PS_FINISHED) {
-      //delay_ms(2);
-    //}
+    while (m_state != PS_FINISHED) {
+      delay_ms(2);
+    }
   }
 
   void set_state(State state) {

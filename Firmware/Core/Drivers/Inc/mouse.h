@@ -213,7 +213,7 @@ class Mouse {
    * distance from the start of the last cell.
    */
   void stop_at_center() {
-    bool has_wall = is_wall(FL);;
+    bool has_wall = is_wall(FL);
     set_steering_mode(STEERING_OFF);
     float remaining = (FULL_CELL + HALF_CELL) - motion.position();
     // finish at very low speed so we can adjust from the wall ahead if present
@@ -246,11 +246,10 @@ class Mouse {
 
   //***************************************************************************//
   void turn_left() {
-    motion.set_position(0);
-    motion.wait_until_position(HALF_CELL);
+    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     turn_IP90L();
-    motion.set_position(HALF_CELL);
     motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.set_position(HALF_CELL);
     motion.wait_until_position(SENSING_POSITION);
     //turn_smooth(SS90EL);
     m_heading = left_from(m_heading);
@@ -258,12 +257,11 @@ class Mouse {
 
   //***************************************************************************//
   void turn_right() {
-    motion.set_position(0);
-    motion.wait_until_position(HALF_CELL);
+    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     //set_steering_mode(STEERING_OFF);
     turn_IP90R();
-    motion.set_position(HALF_CELL);
     motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.set_position(HALF_CELL);
     motion.wait_until_position(SENSING_POSITION);
     //turn_smooth(SS90ER);
     m_heading = right_from(m_heading);
@@ -282,11 +280,13 @@ class Mouse {
    */
   void turn_back() {
     //reporter.log_action_status('B', ' ', m_location, m_heading);
-    stop_at_center();
+    //stop_at_center();
+    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     turn_IP180();
     float distance = SENSING_POSITION - HALF_CELL;
-    motion.move(distance, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
-    motion.set_position(SENSING_POSITION);
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.set_position(HALF_CELL);
+    motion.wait_until_position(SENSING_POSITION);
     m_heading = behind_from(m_heading);
   }
 
@@ -388,6 +388,25 @@ class Mouse {
     set_steering_mode(STEERING_OFF);
   }
 
+
+  //***************************************************************************//
+  //************************************************************************************************************************ */
+  //***************************************************************************//
+  //************************************************************************************************************************ */
+  //***************************************************************************//
+  //************************************************************************************************************************ */
+  //***************************************************************************//
+  //************************************************************************************************************************ */
+  //***************************************************************************//
+  //************************************************************************************************************************ */
+  //***************************************************************************//
+  //************************************************************************************************************************ */
+  //***************************************************************************//
+  //************************************************************************************************************************ */
+  //***************************************************************************//
+  //************************************************************************************************************************ */
+  //***************************************************************************//
+  //************************************************************************************************************************ */
   /****************************************************************************/
   /***
    * search_to will cause the mouse to move to the given target cell

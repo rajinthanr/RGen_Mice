@@ -122,7 +122,7 @@ const int EXTRA_WALL_ADJUST = 6;
 // hardware ADC channel numbers
 
 
-const float FULL_CELL = 180.0f;
+const float FULL_CELL = 192.0f;
 const float HALF_CELL = FULL_CELL / 2.0;
 
 // ADVANCED SENSOR
@@ -267,7 +267,7 @@ const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
 
 //***** PERFORMANCE CONSTANTS************************************************//
 // search and run speeds in mm/s and mm
-const int SEARCH_SPEED = 100;
+const int SEARCH_SPEED = 200;
 const int SEARCH_ACCELERATION = 2000;
 const int SEARCH_TURN_SPEED = 100;
 const int SMOOTH_TURN_SPEED = 500;
@@ -353,7 +353,7 @@ const float BATTERY_MULTIPLIER = (ADC_REF_VOLTS / ADC_FSR / BATTERY_DIVIDER_RATI
 const int MOTOR_MAX_PWM = 255;
 
 // the position in the cell where the sensors are sampled.
-const float SENSING_POSITION = 150.0;
+const float SENSING_POSITION = 160.0;
 
 
 #endif  // CONFIG_H
