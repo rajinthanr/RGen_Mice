@@ -19,7 +19,7 @@ typedef struct
     float previous_error;
 } PID;
 
-PID pid_theta = {30.0f, 0.3f, 0.1f, 0, 0};
+PID pid_theta = {10.5f, 0.10f, 0.0f, 0, 0};
 PID pid_distance = {30.0f, 0.3f, 0.1f, 0, 0};
 
 void Wall_Configuration(void)
@@ -94,15 +94,14 @@ float clamp(float value, float min, float max)
     return value;
 }
 
-float wallFront(int band)
+float wallFront()
 {
-    float error_l = dis_reading[FL] - SIDE_WALL_DISTANCE_CAL;
-    float error_r = dis_reading[FR] - SIDE_WALL_DISTANCE_CAL;
-
-    error_l/=10;
+    float error_l = dis_reading[FL];
+    float error_r = dis_reading[FR];
 
     // error_theta: difference between left and right front wall distances
-    float error_theta = error_r - error_l;
+    float error_theta = atan((error_r - error_l) / FRONT_SENSOR_SPACING)*180/PI;
+    
 
     pid_theta.integral += error_theta;
     float derivative = error_theta - pid_theta.previous_error;
@@ -117,28 +116,14 @@ float wallFront(int band)
     }
 
     float correction_angle = pid_theta.kp * error_theta + pid_theta.ki * pid_theta.integral + pid_theta.kd * derivative;
-    float correction_speed = 0;
+  
 
-    // error_distance: sum of left and right front wall errors (how far from target band)
-    if (abs(error_theta) < 5)
-    {
-        float error_distance = error_l + error_r;
+    correction_angle = clamp(correction_angle, -STEERING_ADJUST_LIMIT*10, STEERING_ADJUST_LIMIT*10);
 
-        pid_distance.integral += error_distance;
-        float derivative_distance = error_distance - pid_distance.previous_error;
-        pid_distance.previous_error = error_distance;
-        pid_distance.integral = clamp(pid_distance.integral, -100, 100);
+    mouse.front_adjustment = correction_angle;
+    return abs(error_theta);
+    //motion.set_target_velocity(correction_speed);
 
-        correction_speed = pid_distance.kp * error_distance + pid_distance.ki * pid_distance.integral + pid_distance.kd * derivative_distance;
-    }
-
-    correction_angle = clamp(correction_angle, -400, 400);
-    correction_speed = clamp(correction_speed, -400, 400);
-
-    motion.set_target_omega(correction_angle );
-    motion.set_target_velocity(correction_speed);
-
-    return abs(correction_angle) + abs(correction_speed);
 }
 
 void wallFollow(bool include_left, bool include_right)
@@ -173,9 +158,9 @@ void wallFollow(bool include_left, bool include_right)
     pre_wall_state = wall_state;
 
     // Use error as input to wall theta PID using a new PID object
-    static PID wall_theta_pid = {50.0f, 0.8f, 0.0f, 0, 0};
+    static PID wall_theta_pid = {5.0f, 0.08f, 0.01f, 0, 0};
 
-    error = -error/10;
+    error = -error;
 
     wall_theta_pid.integral += error;
     float derivative = error - wall_theta_pid.previous_error;

@@ -19,7 +19,7 @@ extern "C"
     float sqrtf(float x);
     void cal_initial_wall();
     void get_cal_initial_wall();
-    float wallFront(int band);
+    float wallFront();
     void wallFollow(bool include_left, bool include_right);
 
 #ifdef __cplusplus

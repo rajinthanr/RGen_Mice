@@ -51,6 +51,9 @@ class Mouse {
     float max_linear_accel = 600.0f;     // Example: 2000 mm/s^2
     float max_angular_accel = 360.0f;    // Example: 1800 deg/s^2
     uint8_t steering_mode = STEERING_OFF;
+    uint8_t is_front_adjust = 0;
+    float front_adjustment = 0;
+    float wall_error = 0;
     float steering_adjustment = 0;
     float last_steering_error = 0;
 
@@ -194,7 +197,6 @@ class Mouse {
       }
     }
     char note = triggered_by_sensor ? 's' : 'd';
-    char dir = (turn_id & 1) ? 'R' : 'L';
     //reporter.log_action_status(dir, note, m_location, m_heading);  // the sensors triggered the turn
     // finally we get to actually turn
     motion.turn(params.angle, params.omega, 0, params.alpha);
@@ -239,6 +241,14 @@ class Mouse {
    * control into thinking it is at (or just before) the start of a new cell.
    * Then it just waits until it gets to the next sensing position.
    */
+
+   void wall_adjustment(){
+    mouse.is_front_adjust = 1;
+    mouse.wall_error = wallFront();
+    while(mouse.wall_error>1){delay_ms(1);}
+    mouse.is_front_adjust = 0;
+   }
+
   void move_ahead() {
     motion.adjust_forward_position(-FULL_CELL);
     motion.wait_until_position(SENSING_POSITION);
@@ -246,7 +256,8 @@ class Mouse {
 
   //***************************************************************************//
   void turn_left() {
-    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    wall_adjustment();
     turn_IP90L();
     motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
@@ -257,8 +268,9 @@ class Mouse {
 
   //***************************************************************************//
   void turn_right() {
-    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     //set_steering_mode(STEERING_OFF);
+    wall_adjustment();
     turn_IP90R();
     motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
@@ -281,9 +293,10 @@ class Mouse {
   void turn_back() {
     //reporter.log_action_status('B', ' ', m_location, m_heading);
     //stop_at_center();
-    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    wall_adjustment();
     turn_IP180();
-    float distance = SENSING_POSITION - HALF_CELL;
+
     motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
     motion.wait_until_position(SENSING_POSITION);
@@ -826,8 +839,8 @@ class Mouse {
    */
 
   void conf_sensor_spin_calibrate() {
-    int side = wait_for_user_start();  // cover front sensor with hand to start
-    bool use_raw = (side == LEFT_START) ? true : false;
+    int side = wait_for_user_start();  // cover front sensor w
+
     enable();
     motion.reset_drive_system();
     set_steering_mode(STEERING_OFF);
@@ -870,8 +883,7 @@ class Mouse {
     bool right_edge_found = false;
     int left_edge_position = 0;
     int right_edge_position = 0;
-    int left_max = 0;
-    int right_max = 0;
+
     wait_for_user_start();  // cover front sensor with hand to start
     enable();
     delay_ms(100);

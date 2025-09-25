@@ -18,6 +18,8 @@ uint8_t is_wall_follow = 0;
 
 // Retarget print to UART
 
+float theta;
+
 void systick(void)
 {
     if(Millis<2000) return;
@@ -30,11 +32,13 @@ void systick(void)
             readSensor();
             mouse.linear_speed = motion.velocity();
             mouse.angular_speed = motion.omega();
-            drive_closed_loop_update();
             motion.update();
+            drive_closed_loop_update();
             // drive_dif(mouse.max_linear_speed/100,mouse.max_linear_speed/100);
         }
 }
+
+
 int core(void)
 {
     print("initialing..\r\n");
@@ -50,14 +54,13 @@ int core(void)
     Encoder_Configration();
     ADC_Config();
     maze.initialise();
+    drive_init();
     print("Core initialized\r\n");
-
+    is_sensor_active = true;
 
     while (1)
     {
-        
         delay_ms(1);
-        readSensor();
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
@@ -80,15 +83,15 @@ int core(void)
             cal_initial_wall();
             is_calibrate = 0;
         }
-        if (is_wall_front)
-        {
-            wallFront(0);
-        }
+        // if (is_wall_front)
+        // {
+        //     wallFront();
+        // }
         
-        if (is_wall_follow)
-        {
-            wallFollow(true, true);
-        }
+        // if (is_wall_follow)
+        // {
+        //     wallFollow(true, true);
+        // }
     }
     return 0;
 }

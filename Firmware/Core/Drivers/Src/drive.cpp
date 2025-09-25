@@ -11,6 +11,8 @@
 
 extern TIM_HandleTypeDef htim3;
 
+uint8_t debug_mot = 0;
+
 
 // PID controller structure
 typedef struct
@@ -38,7 +40,7 @@ float position_controller() {
     static float I = 0.0f;
     const float KP = 0.2f; // Proportional gain
     const float KD = 0.01f; // Derivative gain
-    const float KI = 0.1f;  // Integral gain
+    const float KI = 0.2f;  // Integral gain
 
     mouse.target_dis += (mouse.linear_speed + mouse.speed_adj) * LOOP_INTERVAL;
     mouse.speed_adj = 0; // Reset after use
@@ -68,6 +70,11 @@ float position_controller() {
         wallFollow(true,true);
     mouse.target_angle +=  mouse.steering_adjustment * LOOP_INTERVAL;
     }
+    if(mouse.is_front_adjust){
+       mouse.wall_error = wallFront();
+    mouse.target_angle +=  mouse.front_adjustment * LOOP_INTERVAL;
+    }
+
     mouse.steering_adjustment = 0; // Reset after use
     float error = mouse.target_angle - angle;
     float diff = error - previous_error;
@@ -128,7 +135,7 @@ void drive(float speed, float angular_speed)
 }
 
 // Function to enable or disable the drive system
-void drive_enable()
+void drive_init()
 {
     // Set PB2 high to enable motors
     HAL_GPIO_WritePin(MOT_ENABLE_GPIO_Port, MOT_ENABLE_Pin, GPIO_PIN_SET);
@@ -136,6 +143,12 @@ void drive_enable()
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+}
+
+void drive_enable()
+{
+    // Set PB2 high to enable motors
+    HAL_GPIO_WritePin(MOT_ENABLE_GPIO_Port, MOT_ENABLE_Pin, GPIO_PIN_SET);
 }
 
 void drive_disable()
@@ -154,6 +167,13 @@ void drive_dif(float left_speed, float right_speed)
     // Convert to PWM (0 to 4095)
     uint16_t left_pwm = (uint16_t)(fabsf(left_speed) * 4095.0f) % 4096;
     uint16_t right_pwm = (uint16_t)(fabsf(right_speed) * 4095.0f) % 4096;
+
+    static uint32_t last_debug_time = 0;
+    uint32_t now = HAL_GetTick();
+    if (debug_mot && (now - last_debug_time >= 400)) {
+        print("l: %d, r: %d || l: %.2f, r: %.2f\n", left_pwm, right_pwm, left_speed, right_speed);
+        last_debug_time = now;
+    }
 
     // Set PWM for left motor (TIM3 CH1 & CH2)
     if (left_speed < 0)

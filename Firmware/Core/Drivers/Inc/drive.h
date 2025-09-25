@@ -1,12 +1,14 @@
 #ifndef DRIVE_H
 #define DRIVE_H
 
-#include "stdbool.h"
+#include "stdint.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+    extern uint8_t debug_mot; // Debug flag for motor outputs
     // Legacy prototypes (not currently implemented in drive.cpp) -- consider removing or implementing
     void drive_init(void);                                 // TODO: implement or remove
     void drive_set_speed(int left_speed, int right_speed); // TODO: map to drive_dif
@@ -14,7 +16,8 @@ extern "C"
 
     // Current drive interface implemented in drive.cpp
     void drive(float speed, float angular_speed); // Linear (m/s) and angular (rad/s)
-    void drive_enable();                          // Enable/disable motor driver (PB2)
+    void drive_enable();
+    void drive_init();                           
     void drive_disable();
     void drive_dif(float left_speed, float right_speed); // Differential speeds (-1..1)
 

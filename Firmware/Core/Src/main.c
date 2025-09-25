@@ -155,13 +155,6 @@ int main(void)
 
   HAL_TIM_Base_Start(&htim10);
 
-  drive_enable();
-  drive_dif(0.0f, 0.0f);
-  // drive_dif(1,0);
-  // drive_dif(0,1);
-  // drive_dif(1,1);
-  // drive_dif(0,0);
-
   return core();
 
   /* USER CODE END 2 */
@@ -489,7 +482,7 @@ static void MX_TIM3_Init(void)
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 4095;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
     Error_Handler();

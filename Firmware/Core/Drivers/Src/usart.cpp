@@ -2,6 +2,7 @@
 #include "mouse.h"
 #include "maze.h"
 #include "variables.h"
+#include "wall_handle.h"
 #include <cstdarg>
 
 
@@ -9,7 +10,7 @@ uint8_t rxData;        // Single byte receive buffer
 uint8_t rxBuffer[100]; // Main RX buffer
 uint16_t rxIndex = 0;
 
-extern UART_HandleTypeDef huart1; // Change to your UART instance\
+extern UART_HandleTypeDef huart1; // Change to your UART instance
 
 
 void print(const char *format, ...)
@@ -147,10 +148,15 @@ void debug()
     enable();
     readSensor();
         print("-------\n%d  %d  %d  %d  \nOmega: %.2f Theta: %.2f Accelerration: %.2f \ncell1: %.3f cel2: %.3f \nlenc %d renc %d traveled: %.2f\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1/1000, cell_2/1000, getLeftEncCount(), getRightEncCount(), get_forward_dis());
-        print("angular speed: %.2f\r\n-------\n", mouse.angular_speed);
+        print("angular speed: %.2f\n", mouse.angular_speed);
+        print("Target theta: %.2f Target dis: %.2f error_theta: %.2f\n-------\n ", mouse.target_angle, mouse.target_dis, wallFront());
     if(!pre_state) disable();
     }
 
+     else if (strcmp(cmdBuffer, "debug_mot") == 0)
+    {   debug_mot = !debug_mot;
+        print("Motor debug: %d\n", debug_mot);
+    }
 
      else if (strcmp(cmdBuffer, "dis") == 0)
     {   uint8_t pre_state = is_sensor_active;
@@ -197,8 +203,9 @@ void debug()
         is_mouse_enable = !is_mouse_enable;
         if (!is_mouse_enable)
         {
-            drive(0, 0);
+            drive_disable();
         }
+        else drive_enable();
         print("Mouse Enable: %d\r\n", is_mouse_enable);
     }
     else if (strcmp(command, "wall_follow") == 0)

@@ -106,6 +106,7 @@ const float SENSING_POSITION = 150.0;
 
 const int FRONT_WALL_DISTANCE_CAL = 100;  // mm
 const int SIDE_WALL_DISTANCE_CAL = 75;   // mm
+const int FRONT_SENSOR_SPACING = 50;     // mm
 
 // ADVANCED SENSOR
 const int RFS_ADC_CHANNEL = 0;
@@ -241,8 +242,8 @@ const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
 
 //***** PERFORMANCE CONSTANTS************************************************//
 // search and run speeds in mm/s and mm
-//const int SEARCH_SPEED = 200;
-#define SEARCH_SPEED mouse.max_linear_speed
+const int SEARCH_SPEED = 200;
+//#define SEARCH_SPEED mouse.max_linear_speed
 const int SEARCH_ACCELERATION = 2000;
 const int SEARCH_TURN_SPEED = 100;
 const int SMOOTH_TURN_SPEED = 500;
