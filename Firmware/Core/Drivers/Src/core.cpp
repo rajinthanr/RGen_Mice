@@ -49,26 +49,21 @@ int core(void)
     UART_Configurations();
     
     Encoder_Configration();
-    
     ADC_Config();
+    maze.initialise();
     print("Core initialized\r\n");
-
-
-
-
-
-
 
 
     while (1)
     {
-        LED2_ON;
+        
         delay_ms(1);
         readSensor();
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
         { // 500ms = 2 times per second
+            LED2_TOGGLE;
             lowBatCheck();
             lastTick = HAL_GetTick();
             // print("L %d R %d FL %d FR %d aSpeed %.2f angle %.2f voltage %d lenc %d renc %d\r\n", LSensor, RSensor, FLSensor, FRSensor, get_gyroZ(), angle, voltage, getLeftEncCount(), getRightEncCount());

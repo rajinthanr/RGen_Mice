@@ -32,6 +32,9 @@ uint8_t RIGHT_START = 2;
 
 
 void set_steering_mode(uint8_t mode) {
+	if(mouse.steering_mode == GYRO_OFF){
+		angle = mouse.target_angle;
+	}
    mouse.last_steering_error = 0;
    mouse.steering_adjustment = 0;
    mouse.steering_mode = mode;

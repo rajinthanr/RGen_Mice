@@ -94,7 +94,9 @@ float position_controller() {
 
 void drive_closed_loop_update()
 {
-    float angle_correction = angle_controller();
+    float angle_correction = 0;
+    if(mouse.steering_mode == GYRO_OFF) angle_correction = 0;
+    else angle_correction = angle_controller();
     float position_correction = position_controller();
     float output_left = position_correction - angle_correction;
     float output_right = position_correction + angle_correction;

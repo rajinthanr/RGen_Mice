@@ -451,7 +451,9 @@ class Mouse {
       // back up to the wall behind
       // TODO: what if there is not a wall?
       // perhaps the caller should decide so this ALWAYS starts at the cell centre?
+      set_steering_mode(GYRO_OFF);
       motion.move(-BACK_WALL_TO_CENTER, SEARCH_SPEED / 4, 0, SEARCH_ACCELERATION / 2);
+      set_steering_mode(STEERING_OFF);
     }
     motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
@@ -476,6 +478,12 @@ class Mouse {
       update_map();
       maze.flood(target);
       unsigned char newHeading = maze.heading_to_smallest(m_location, m_heading);
+      if(newHeading == BLOCKED) {
+        // we are stuck - no way out
+        print("Stuck!\n");
+        motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+        break;
+      }
       unsigned char hdgChange = (newHeading - m_heading) & 0x3;
       if (m_location != target) {
         print("%d \n", hdgChange);
@@ -501,7 +509,7 @@ class Mouse {
     }
     // we are entering the target cell so come to an orderly
     // halt in the middle of that cell
-    stop_at_center();
+    //stop_at_center();
     disable();
     print("\n");
     print("Arrived!  ");

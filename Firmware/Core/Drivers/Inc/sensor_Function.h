@@ -37,6 +37,7 @@ extern "C"
   STEER_LEFT_WALL,
   STEER_RIGHT_WALL,
   STEERING_OFF,
+  GYRO_OFF
   };
 
 // Re-order to match logical order: FL, L, R, FR -> channels: 11,10,4,5
