@@ -77,10 +77,14 @@ int core(void)
             //static int8_t state = -1;
             //drive_dif(state,state);
             //state = -state;
-            mouse.search_maze();
+            //mouse.search_maze();
             //motion.spin_turn(720, mouse.max_angular_speed, mouse.max_angular_accel);
+            print("Search started\n");
+            mouse.search_to(maze.goal());
+            maze.flood(START);
             is_run = 0;
         }
+
         if (is_calibrate)
         {
             cal_initial_wall();

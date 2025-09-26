@@ -142,15 +142,16 @@ void debug()
             print("Turning to %.2f degrees\r\n", value);
             is_run = 1;
         }
+
+        else if( strcmp(cmdBuffer, "set_goal") == 0)
+        {
+            
+        }
     }
     if (strcmp(cmdBuffer, "info") == 0){
-    uint8_t pre_state = is_sensor_active;
-    enable();
-    readSensor();
         print("-------\n%d  %d  %d  %d  \nOmega: %.2f Theta: %.2f Accelerration: %.2f \ncell1: %.3f cel2: %.3f \nlenc %d renc %d traveled: %.2f\n", reading[0], reading[1], reading[2], reading[3], get_gyroZ(), angle, get_accY(), cell_1/1000, cell_2/1000, getLeftEncCount(), getRightEncCount(), get_forward_dis());
         print("angular speed: %.2f\n", mouse.angular_speed);
         print("Target theta: %.2f Target dis: %.2f error_theta: %.2f\n-------\n ", mouse.target_angle, mouse.target_dis, wallFront());
-    if(!pre_state) disable();
     }
 
      else if (strcmp(cmdBuffer, "debug_mot") == 0)
@@ -159,13 +160,21 @@ void debug()
     }
 
      else if (strcmp(cmdBuffer, "dis") == 0)
-    {   uint8_t pre_state = is_sensor_active;
-        enable();
-        readSensor();
+    {
         for (int i = 0; i < 4; i++)
             print("  %.2f  |", dis_reading[i]);
         print("\r\n");
-        if(!pre_state) disable();
+    }
+    
+    else if (strcmp(cmdBuffer, "enable_ir") == 0)
+    {
+        static uint8_t is_sensor_active = false;
+        is_sensor_active = !is_sensor_active;
+        if (is_sensor_active)
+            enable();
+        else
+            disable();
+        print("IR Enable: %d\n", is_sensor_active);
     }
     else if (strcmp(cmdBuffer, "run") == 0)
     {

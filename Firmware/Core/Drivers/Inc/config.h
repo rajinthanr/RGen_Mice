@@ -104,9 +104,11 @@ const float SENSING_POSITION = 150.0;
 
 //***** SENSOR DISTANCE *****************************************************//
 
-const int FRONT_WALL_DISTANCE_CAL = 100;  // mm
-const int SIDE_WALL_DISTANCE_CAL = 75;   // mm
-const int FRONT_SENSOR_SPACING = 50;     // mm
+const int FRONT_SENSOR_SPACING = 50;     // mm                                 | distance between front sensors
+const int SIDE_SENSOR_SPACING = 24;      // mm                                 | distance between side sensors
+const int FRONT_SENSOR_DISPLACEMENT = 23;      // mm                           | center axis to front sensor placement
+const int FRONT_WALL_DISTANCE_CAL = 100;  // mm                                | desired calibration distance from front wall
+const int SIDE_WALL_DISTANCE_CAL = (FULL_CELL- POLE_WIDTH - SIDE_SENSOR_SPACING)/2;   // mm  | desired distance from side wall
 
 // ADVANCED SENSOR
 const int RFS_ADC_CHANNEL = 0;

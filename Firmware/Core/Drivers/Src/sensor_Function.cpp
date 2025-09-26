@@ -58,7 +58,7 @@ float dist(int ir_num)
 bool is_wall(int w)
 {
     if (w == FL || w == FR)
-        return (dis_reading[FL] + dis_reading[FR]) <= 400;
+        return (dis_reading[FL] + dis_reading[FR]) <= 550;
     return dis_reading[w] <= 120;
 }
 
@@ -130,6 +130,10 @@ void readSensor(void)
 	{
 		dis_reading[i] = dist(i);
 	}
+	dis_reading[FL] += FRONT_SENSOR_DISPLACEMENT;
+	dis_reading[FR] += FRONT_SENSOR_DISPLACEMENT;
+	dis_reading[L] += SIDE_SENSOR_SPACING / 2;
+	dis_reading[R] += SIDE_SENSOR_SPACING / 2;
 
 	// delay_us(80);
 	// elapseMicros(500,curt);

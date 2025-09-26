@@ -12,6 +12,8 @@
 extern TIM_HandleTypeDef htim3;
 
 uint8_t debug_mot = 0;
+uint8_t is_left_wall = 0;
+uint8_t is_right_wall = 0;
 
 
 // PID controller structure
@@ -70,7 +72,7 @@ float position_controller() {
     
     mouse.target_angle += mouse.angular_speed  * LOOP_INTERVAL;
     if(mouse.steering_mode != STEERING_OFF){
-        wallFollow(true,true);
+        wallFollow(is_left_wall, is_right_wall);
     mouse.target_angle +=  mouse.steering_adjustment * LOOP_INTERVAL;
     }
     if(mouse.is_front_adjust){

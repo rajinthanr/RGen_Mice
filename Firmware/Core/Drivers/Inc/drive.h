@@ -9,6 +9,9 @@ extern "C"
 #endif
 
     extern uint8_t debug_mot; // Debug flag for motor outputs
+    extern uint8_t is_left_wall;
+    extern uint8_t is_right_wall;
+
     // Legacy prototypes (not currently implemented in drive.cpp) -- consider removing or implementing
     void drive_init(void);                                 // TODO: implement or remove
     void drive_set_speed(int left_speed, int right_speed); // TODO: map to drive_dif

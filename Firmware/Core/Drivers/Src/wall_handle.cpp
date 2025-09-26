@@ -47,6 +47,7 @@ void cal_initial_wall()
         readSensor();
         for (int a = 0; a < 4; a++)
             initial_wall[a] += reading[a];
+            delay_ms(1);
     }
     for (int a = 0; a < 4; a++)
     {
@@ -61,7 +62,7 @@ void cal_initial_wall()
         putInt(FLASH_CAL_INIT_WALL + a, initial_wall[a]);
 
     commit_flash();
-    delay_ms(2000);
+    delay_ms(1000);
     LED4_OFF;
     LED3_OFF;
     if(!pre_state) disable();
@@ -152,7 +153,7 @@ void wallFollow(bool include_left, bool include_right)
     else if (!is_wall(L) && !is_wall(R))
     {
         wall_state = 3;
-        drive_dif(mouse.max_linear_speed, mouse.max_linear_speed);
+        return;
     }
 
     pre_wall_state = wall_state;
