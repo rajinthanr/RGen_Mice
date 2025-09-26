@@ -204,6 +204,7 @@ void debug()
         if (!is_mouse_enable)
         {
             drive_disable();
+            //reset_pwm();
         }
         else drive_enable();
         print("Mouse Enable: %d\r\n", is_mouse_enable);

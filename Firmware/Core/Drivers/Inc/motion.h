@@ -53,7 +53,6 @@ class Motion {
   }
 
   void stop() {
-    //motors.stop();
     drive_dif(0, 0);
   }
 

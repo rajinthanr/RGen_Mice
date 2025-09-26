@@ -17,6 +17,7 @@ extern "C"
     // Current drive interface implemented in drive.cpp
     void drive(float speed, float angular_speed); // Linear (m/s) and angular (rad/s)
     void drive_enable();
+    void reset_pwm();
     void drive_init();                           
     void drive_disable();
     void drive_dif(float left_speed, float right_speed); // Differential speeds (-1..1)

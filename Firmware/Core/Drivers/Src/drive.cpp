@@ -145,8 +145,17 @@ void drive_init()
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
 }
 
+void reset_pwm(){
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0);
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 0);
+}
+
 void drive_enable()
 {
+    mouse.target_angle = angle; //for safety
+    mouse.target_dis = get_forward_dis();
     // Set PB2 high to enable motors
     HAL_GPIO_WritePin(MOT_ENABLE_GPIO_Port, MOT_ENABLE_Pin, GPIO_PIN_SET);
 }

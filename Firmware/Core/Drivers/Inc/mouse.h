@@ -243,6 +243,7 @@ class Mouse {
    */
 
    void wall_adjustment(){
+    if(maze.is_exit(m_location,m_heading)) return;
     mouse.is_front_adjust = 1;
     mouse.wall_error = wallFront();
     while(mouse.wall_error>1){delay_ms(1);}
@@ -250,8 +251,11 @@ class Mouse {
    }
 
   void move_ahead() {
-    motion.adjust_forward_position(-FULL_CELL);
+    motion.set_position(SENSING_POSITION-FULL_CELL);
+    motion.wait_until_position(HALF_CELL);
+    set_steering_mode(STEERING_OFF);
     motion.wait_until_position(SENSING_POSITION);
+    set_steering_mode(STEER_NORMAL);
   }
 
   //***************************************************************************//
