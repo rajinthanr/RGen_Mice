@@ -74,6 +74,9 @@ int core(void)
 
         if (is_run)
         {
+            //static int8_t state = -1;
+            //drive_dif(state,state);
+            //state = -state;
             mouse.search_maze();
             //motion.spin_turn(720, mouse.max_angular_speed, mouse.max_angular_accel);
             is_run = 0;

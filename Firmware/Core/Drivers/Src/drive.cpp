@@ -39,18 +39,21 @@ float position_controller() {
     static float previous_error = 0.0f;
     static float I = 0.0f;
     const float KP = 0.2f; // Proportional gain
-    const float KD = 0.01f; // Derivative gain
-    const float KI = 0.2f;  // Integral gain
+    const float KD = 0.00f; // Derivative gain
+    const float KI = 0.0f;  // Integral gain
 
     mouse.target_dis += (mouse.linear_speed + mouse.speed_adj) * LOOP_INTERVAL;
     mouse.speed_adj = 0; // Reset after use
     float error = mouse.target_dis - get_forward_dis();
+    static float filtered_error = 0.0f;
+    const float alpha = 0.5f; // Low-pass filter coefficient (0 < alpha < 1)
+    filtered_error = alpha * error + (1.0f - alpha) * filtered_error;
+    error = filtered_error;
     float diff = error - previous_error;
     previous_error = error;
     I += error * LOOP_INTERVAL;
 
-    if(I > 100) I = 100; // Anti-windup
-    if(I < -100) I = -100;
+    I = fmaxf(fminf(I, 10.0f), -10.0f); // Anti-windup using clamp
 
     float output = KP * error + KD * diff + KI * I;
     return output;
@@ -59,9 +62,9 @@ float position_controller() {
   float angle_controller() {
     static float previous_error = 0.0f;
     static float I = 0.0f;
-    const float KP = 0.06f; // Proportional gain
-    const float KD = 3.0f; // Derivative gain
-    const float KI = 0.3f;  // Integral gain
+    const float KP = 0.03f; // Proportional gain
+    const float KD = 2.01f; // Derivative gain
+    const float KI = 0.1f;  // Integral gain
 
     float LOOP_INTERVAL = 0.001;
     
@@ -77,6 +80,10 @@ float position_controller() {
 
     mouse.steering_adjustment = 0; // Reset after use
     float error = mouse.target_angle - angle;
+    static float filtered_error = 0.0f;
+    const float alpha = 0.2f; // Low-pass filter coefficient (0 < alpha < 1)
+    filtered_error = alpha * error + (1.0f - alpha) * filtered_error;
+    error = filtered_error;
     float diff = error - previous_error;
     previous_error = error;
     I += error * LOOP_INTERVAL;
@@ -91,9 +98,12 @@ float position_controller() {
 void drive_closed_loop_update()
 {
     float angle_correction = 0;
+    float position_correction = 0;
+
     if(mouse.steering_mode == GYRO_OFF) angle_correction = 0;
     else angle_correction = angle_controller();
-    float position_correction = position_controller();
+    position_correction = position_controller();
+
     float output_left = position_correction - angle_correction;
     float output_right = position_correction + angle_correction;
 
@@ -170,8 +180,8 @@ void drive_disable()
 void drive_dif(float left_speed, float right_speed)
 {
     // Clamp values to -1.0 to 1.0
-    left_speed = fmaxf(fminf(left_speed, 1.0f), -1.0f);
-    right_speed = fmaxf(fminf(right_speed, 1.0f), -1.0f);
+    left_speed = fmaxf(fminf(left_speed, 0.99f), -0.99f);
+    right_speed = fmaxf(fminf(right_speed, 0.99f), -0.99f);
 
     // Convert to PWM (0 to 4095)
     uint16_t left_pwm = (uint16_t)(fabsf(left_speed) * 4095.0f) % 4096;

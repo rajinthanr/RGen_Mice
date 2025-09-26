@@ -103,6 +103,20 @@ void icm_initialize()
 	HAL_Delay(100);
 	// Pull CS high to end SPI transaction
 
+	/* Configure GYRO_CONFIG1 for 2nd Order UI Filter and 170Hz Temp DLPF */
+	// GYRO_CONFIG1 register: address 0x51
+	// TEMP_FILT_BW = 001 (bits 7:5) for 170Hz
+	// GYRO_UI_FILT_ORD = 01 (bits 3:2) for 2nd Order
+	// GYRO_DEC2_M2_ORD = 10 (bits 1:0) for 3rd Order (as per datasheet, 2nd order not available for these bits)
+	uint8_t gyro_config1_reg = 0x51;
+	uint8_t gyro_config1_val = (0b001 << 5) | (0b01 << 2) | (0b10); // 0x26
+
+	// cs(0);
+	// HAL_SPI_Transmit(&hspi3, &gyro_config1_reg, 1, 100);
+	// HAL_SPI_Transmit(&hspi3, &gyro_config1_val, 1, 100);
+	// cs(1);
+	// HAL_Delay(10);
+
 	uint8_t whoami_reg = 0x75 | 0x80; // WHO_AM_I register address with read bit set
 	uint8_t whoami_val = 0;
 	cs(0);
