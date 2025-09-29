@@ -197,7 +197,7 @@ private:
           // acceleration. It is just a small velicity that ensures that the motion continues
           // past the finish point in case floating point rounding prevents that happening.
           // It is a nasty hack I keep meaning to find a more tidy solution for.
-          m_target_speed = m_sign * 0.0f;//5.0f;  // magic number to make sure we reach zero
+          m_target_speed = m_sign * 1.0f;//5.0f;  // magic number to make sure we reach zero
         } else {
           m_target_speed = m_final_speed;
         };

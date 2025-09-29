@@ -14,6 +14,8 @@ extern "C" {
 #define MAZE_CELL_COUNT (MAZE_WIDTH * MAZE_HEIGHT)
 #define MAX_COST (MAZE_CELL_COUNT - 1)
 
+#define FLASH_MAZE_START 100
+
 // ---- Wall states ----
 enum WallState {
     EXIT = 0,
@@ -86,6 +88,9 @@ public:
 
     void flood(const Location target);
     Heading heading_to_smallest(const Location cell, const Heading start_heading) const;
+
+    void save_to_flash();
+    void load_from_flash();
 
 private:
     void set_wall_state(const Location loc, const Heading heading, const WallState state);

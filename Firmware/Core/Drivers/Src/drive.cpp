@@ -40,9 +40,9 @@ static float target_angular = 0.0f;
 float position_controller() {
     static float previous_error = 0.0f;
     static float I = 0.0f;
-    const float KP = 0.2f; // Proportional gain
-    const float KD = 0.00f; // Derivative gain
-    const float KI = 0.0f;  // Integral gain
+    const float KP = 0.4f; // Proportional gain
+    const float KD = 0.1f; // Derivative gain
+    const float KI = 0.3f;  // Integral gain
 
     mouse.target_dis += (mouse.linear_speed + mouse.speed_adj) * LOOP_INTERVAL;
     mouse.speed_adj = 0; // Reset after use
@@ -55,7 +55,7 @@ float position_controller() {
     previous_error = error;
     I += error * LOOP_INTERVAL;
 
-    I = fmaxf(fminf(I, 10.0f), -10.0f); // Anti-windup using clamp
+    I = fmaxf(fminf(I, 3.0f), -3.0f); // Anti-windup using clamp
 
     float output = KP * error + KD * diff + KI * I;
     return output;
@@ -66,7 +66,7 @@ float position_controller() {
     static float I = 0.0f;
     const float KP = 0.03f; // Proportional gain
     const float KD = 2.01f; // Derivative gain
-    const float KI = 0.1f;  // Integral gain
+    const float KI = 0.05f;  // Integral gain
 
     float LOOP_INTERVAL = 0.001;
     
@@ -90,8 +90,8 @@ float position_controller() {
     previous_error = error;
     I += error * LOOP_INTERVAL;
 
-    if(I > 10) I = 10; // Anti-windup
-    if(I < -10) I = -10;
+    if(I > 3) I = 3; // Anti-windup
+    if(I < -3) I = -3;
 
     float output = KP * error + KD * diff + KI * I;
     return output;
@@ -182,9 +182,20 @@ void drive_disable()
 void drive_dif(float left_speed, float right_speed)
 {
     // Clamp values to -1.0 to 1.0
-    left_speed = fmaxf(fminf(left_speed, 0.99f), -0.99f);
-    right_speed = fmaxf(fminf(right_speed, 0.99f), -0.99f);
+    left_speed = fmaxf(fminf(left_speed, 0.8f), -0.8f);
+    right_speed = fmaxf(fminf(right_speed, 0.8f), -0.8f);
 
+
+    static float prev_left = 0.0f;
+    static float prev_right = 0.0f;
+
+    // Clamp
+    prev_left = left_speed;
+    prev_right = right_speed;
+    left_speed = fmaxf(fminf(left_speed, 0.9f), -0.9f);
+    right_speed = fmaxf(fminf(right_speed, 0.9f), -0.9f);
+
+    
     // Convert to PWM (0 to 4095)
     uint16_t left_pwm = (uint16_t)(fabsf(left_speed) * 4095.0f) % 4096;
     uint16_t right_pwm = (uint16_t)(fabsf(right_speed) * 4095.0f) % 4096;
@@ -197,7 +208,14 @@ void drive_dif(float left_speed, float right_speed)
     }
 
     // Set PWM for left motor (TIM3 CH1 & CH2)
-    if (left_speed < 0)
+
+    // Protection: if sign changes, insert a brief neutral (coast) period
+    if ((left_speed > 0 && prev_left < 0) || (left_speed < 0 && prev_left > 0)) {
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 4095);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 4095);
+        //HAL_Delay(2); // 2 ms coast (tune as needed)
+    }
+    else if (left_speed < 0)
     {
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, left_pwm);
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 0);
@@ -208,8 +226,12 @@ void drive_dif(float left_speed, float right_speed)
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, left_pwm);
     }
 
-    // Set PWM for right motor (TIM3 CH3 & CH4)
-    if (right_speed < 0)
+    if ((right_speed > 0 && prev_right < 0) || (right_speed < 0 && prev_right > 0)) {
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 4095);
+        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 4095);
+        //HAL_Delay(2);
+    }
+    else if (right_speed < 0)
     {
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, right_pwm);
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 0);
@@ -219,6 +241,10 @@ void drive_dif(float left_speed, float right_speed)
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 0);
         __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, right_pwm);
     }
+
+
+    prev_left = left_speed;
+    prev_right = right_speed;
 }
 
 

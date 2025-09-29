@@ -1,6 +1,8 @@
 #include "maze.h"
 #include <stdio.h>
 
+#include "flash.h"
+
 // ---- Location implementation ----
 Location::Location() : x(0), y(0) {}
 Location::Location(uint8_t ix, uint8_t iy) : x(ix), y(iy) {}
@@ -113,7 +115,7 @@ void Maze::initialise() {
         m_walls[0][y].west = WALL;
         m_walls[MAZE_WIDTH - 1][y].east = WALL;
     }
-    set_wall_state(START, EAST, WALL);
+    //set_wall_state(START, EAST, WALL);
     set_wall_state(START, NORTH, EXIT);
 
     set_mask(MASK_OPEN);
@@ -204,5 +206,31 @@ void Maze::set_wall_state(const Location loc, const Heading heading, const WallS
             break;
         default:
             break;
+    }
+}
+
+
+
+void Maze::save_to_flash() {
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+        for (int y = 0; y < MAZE_HEIGHT; y++) {
+            WallInfo walls = m_walls[x][y];
+            uint8_t packed = (walls.north & 0x03) | ((walls.east & 0x03) << 2) |
+                             ((walls.south & 0x03) << 4) | ((walls.west & 0x03) << 6);
+            putInt(FLASH_MAZE_START + (y * MAZE_WIDTH + x), packed);
+        }
+    }
+    commit_flash();
+}
+
+void Maze::load_from_flash() {
+    for (int x = 0; x < MAZE_WIDTH; x++) {
+        for (int y = 0; y < MAZE_HEIGHT; y++) {
+            uint8_t packed = getInt(FLASH_MAZE_START + (y * MAZE_WIDTH + x)) & 0xFF;
+            m_walls[x][y].north = static_cast<WallState>(packed & 0x03);
+            m_walls[x][y].east  = static_cast<WallState>((packed >> 2) & 0x03);
+            m_walls[x][y].south = static_cast<WallState>((packed >> 4) & 0x03);
+            m_walls[x][y].west  = static_cast<WallState>((packed >> 6) & 0x03);
+        }
     }
 }

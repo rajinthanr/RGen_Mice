@@ -79,9 +79,9 @@ void get_cal_initial_wall()
     {
         initial_wall[a] = getInt(FLASH_CAL_INIT_WALL + a);
         // wall_threshold[a] = 200;
-        print("%d ", initial_wall[a]);
+        //print("%d ", initial_wall[a]);
     }
-    print("        \n");
+    //print("        \n");
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -142,13 +142,13 @@ void wallFollow(bool include_left, bool include_right)
     {
         // digitalWrite(LED_PIN, HIGH);
         wall_state = 1;
-        error = dis_reading[R] - SIDE_WALL_DISTANCE_CAL;
+        error = dis_reading[R] - HALF_CELL;
     }
 
     else if (include_left && is_wall(L) && !is_wall(R))
     {
         wall_state = 2;
-        error = SIDE_WALL_DISTANCE_CAL - dis_reading[L];
+        error = HALF_CELL - dis_reading[L];
     }
     else if (!is_wall(L) && !is_wall(R))
     {

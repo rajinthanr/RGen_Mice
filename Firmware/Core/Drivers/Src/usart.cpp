@@ -106,7 +106,11 @@ void debug()
 
     if (command && valueStr)
     {
-        float value = atof(valueStr);
+        float value = 0;
+        // Try to parse as float, but if not a number, keep as string
+        if (valueStr && (isdigit(valueStr[0]) || valueStr[0] == '-' || valueStr[0] == '+')) {
+            value = atof(valueStr);
+        }
 
         if (strcmp(command, "speed") == 0)
         {
@@ -145,7 +149,13 @@ void debug()
 
         else if( strcmp(cmdBuffer, "set_goal") == 0)
         {
-            
+            int gx = 0, gy = 0;
+            if (sscanf(valueStr, "(%d,%d)", &gx, &gy) == 2) {
+              maze.set_goal(Location(gx, gy));
+              print("Goal set to (%d,%d)\n", gx, gy);
+            } else {
+              print("Invalid format for set_goal. Use (x,y)\n");
+            }
         }
     }
     if (strcmp(cmdBuffer, "info") == 0){
@@ -233,6 +243,16 @@ void debug()
       }
         int style = COSTS;
         print_maze(style);
+    }
+    else if (strcmp(command, "save_maze") == 0)
+    {
+        maze.save_to_flash();
+        print("Maze saved to flash.\n");
+    }
+    else if (strcmp(command, "load_maze") == 0)
+    {
+        maze.load_from_flash();
+        print("Maze loaded from flash.\n");
     }
 
 }

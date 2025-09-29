@@ -249,7 +249,11 @@ class Mouse {
     if(maze.is_exit(m_location,m_heading)) return;
     mouse.is_front_adjust = 1;
     mouse.wall_error = wallFront();
-    while(mouse.wall_error>1){delay_ms(1);}
+    uint32_t start = millis();
+    while(mouse.wall_error > 1) {
+      if (millis() - start > 1000) break;
+      delay_ms(1);
+    }
     mouse.is_front_adjust = 0;
    }
 
@@ -532,7 +536,9 @@ class Mouse {
       unsigned char hdgChange = (newHeading - m_heading) & 0x3;
       if (m_location != target) {
         print("%d \n", hdgChange);
-        LED4_TOGGLE;
+        LED4_ON;
+        delay_us(50);
+        LED4_OFF;
         switch (hdgChange) {
           // each of the following actions will finish with the
           // robot moving and at the sensing point ready for the
@@ -1026,8 +1032,89 @@ class Mouse {
     disable();
   }
 
-};
+//***************************************************************************//
 
-//extern Mouse mouse;
+  void search(Location target) {
+    maze.flood(target);
+    Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
+    if(newHeading == BLOCKED) {
+      print("Stuck!\n");
+      print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
+      return;
+    }
+    turn_to_face(newHeading);
+    delay_ms(200);
+    enable();
+    motion.reset_drive_system();
+    set_steering_mode(STEERING_OFF);  // never steer from zero speed
+    
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.set_position(HALF_CELL);
+    print("Off we go...");
+    print("[");
+    print("%d", target.x);
+    print(",");
+    print("%d", target.y);
+    print("]");
+    print("\n");
+
+    motion.wait_until_position(SENSING_POSITION);
+    // Each iteration of this loop starts at the sensing point
+    while (m_location != target) {
+      if (switches.button_pressed()) {  // allow user to abort gracefully
+        break;
+      }
+      //print("e\n");
+      log_action_status('-', ' ', m_location, m_heading);
+      set_steering_mode(STEER_NORMAL);
+      m_location = m_location.neighbour(m_heading);  // the cell we are about to enter
+      update_map();
+      maze.flood(target);
+      unsigned char newHeading = maze.heading_to_smallest(m_location, m_heading);
+      if(newHeading == BLOCKED) {
+        // we are stuck - no way out
+        print("Stuck!\n");
+        print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
+        motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+        break;
+      }
+      unsigned char hdgChange = (newHeading - m_heading) & 0x3;
+      if (m_location != target) {
+        print("%d \n", hdgChange);
+        LED4_ON;
+        delay_us(50);
+        LED4_OFF;
+        switch (hdgChange) {
+          // each of the following actions will finish with the
+          // robot moving and at the sensing point ready for the
+          // next loop iteration
+          case AHEAD:
+            move_ahead();
+            break;
+          case RIGHT:
+            turn_right();
+            break;
+          case BACK:
+            turn_back();
+            break;
+          case LEFT:
+            turn_left();
+            break;
+        }
+      }
+    }
+    // we are entering the target cell so come to an orderly
+    // halt in the middle of that cell
+    stop_at_center();
+    disable();
+    print("\n");
+    print("Arrived!  \n");
+    delay_ms(250);
+    motion.reset_drive_system();
+    set_steering_mode(STEERING_OFF);
+  }
+  /****************************************************************************/
+
+  };
 
 #endif  // MOUSE_H

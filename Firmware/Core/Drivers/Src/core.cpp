@@ -42,21 +42,24 @@ void systick(void)
 int core(void)
 {
     print("initialing..\r\n");
-   // delay_ms(50);
+    delay_ms(100);
+
+    UART_Configurations();
     init_flash();
     Wall_Configuration();
-    Systick_Configuration();
     LED_Configuration();
     IR_Configuration();
     icm_initialize();
-    UART_Configurations();
-    
     Encoder_Configration();
     ADC_Config();
+    
     maze.initialise();
     drive_init();
     print("Core initialized\r\n");
     is_sensor_active = true;
+    maze.set_goal(Location(7, 7)); //default goal
+
+    Systick_Configuration();
 
     while (1)
     {
@@ -80,7 +83,7 @@ int core(void)
             //mouse.search_maze();
             //motion.spin_turn(720, mouse.max_angular_speed, mouse.max_angular_accel);
             print("Search started\n");
-            mouse.search_to(maze.goal());
+            mouse.search(maze.goal());
             maze.flood(START);
             is_run = 0;
         }
