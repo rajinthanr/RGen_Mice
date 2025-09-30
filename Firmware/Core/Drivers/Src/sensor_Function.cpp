@@ -74,7 +74,7 @@ void set_steering_mode(uint8_t mode) {
 /*read IR sensors*/
 void readSensor(void)
 {
-	if(is_sensor_active == false) return;
+	//if(is_sensor_active == false) return;
 	uint32_t curt;
 	// read DC value
 
@@ -158,11 +158,11 @@ void safety_stop(int duration = 100)
 {
 	drive_disable();
 	drive(0, 0);
-	ALL_LED_OFF;
+	LEDS_OFF;
 
 	while (1)
 	{
-		ALL_LED_OFF;
+		LEDS_OFF;
 		delay_ms(duration*4);
 
 		LED3_ON;
@@ -240,11 +240,11 @@ void disable(){
 }
 
 uint8_t occluded_left() {
-    return dis_reading[FL] < 50 && dis_reading[FR] > 50 ;
+    return dis_reading[FL] < 80 && dis_reading[FR] > 80 ;
   }
 
 uint8_t occluded_right() {
-    return dis_reading[FL] > 50 && dis_reading[FR] < 50;
+    return dis_reading[FL] > 80 && dis_reading[FR] < 80;
   }
 
 

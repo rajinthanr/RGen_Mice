@@ -33,13 +33,13 @@ void LED_Blink(uint8_t led_num, uint32_t delay_time, uint8_t times);
 #define SIDE_EM_ON GPIO_SetBits(GPIOA, GPIO_Pin_7)
 #define SIDE_EM_OFF GPIO_ResetBits(GPIOA, GPIO_Pin_7)
 
-#define ALL_LED_OFF \
+#define LEDS_OFF \
     LED1_OFF;       \
     LED2_OFF;       \
     LED3_OFF;       \
     LED4_OFF;
 
-#define ALL_LED_ON \
+#define LEDS_ON \
     LED1_ON;       \
     LED2_ON;       \
     LED3_ON;       \

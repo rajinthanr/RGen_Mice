@@ -16,26 +16,29 @@ class Switches {
  public:
   explicit Switches(){};
 
-  inline bool button_pressed() {
-    return false;
-    return HAL_GPIO_ReadPin(B_KEY_GPIO_Port, B_KEY_Pin) == GPIO_PIN_RESET;
+  bool key_pressed() {
+    return HAL_GPIO_ReadPin(B_KEY_GPIO_Port, B_KEY_Pin) == GPIO_PIN_SET;
   }
 
-  void wait_for_button_press() {
-    while (not(button_pressed())) {
+  bool boot_pressed() {
+    return HAL_GPIO_ReadPin(B_BOOT_GPIO_Port, B_BOOT_Pin) == GPIO_PIN_SET;
+  }
+
+  void wait_for_key_press() {
+    while (not(key_pressed())) {
       delay_ms(10);
     };
   }
 
-  void wait_for_button_release() {
-    while (button_pressed()) {
+  void wait_for_key_release() {
+    while (key_pressed()) {
       delay_ms(10);
     };
   }
 
-  void wait_for_button_click() {
-    wait_for_button_press();
-    wait_for_button_release();
+  void wait_for_key_click() {
+    wait_for_key_press();
+    wait_for_key_release();
     delay_ms(250);
   }
 

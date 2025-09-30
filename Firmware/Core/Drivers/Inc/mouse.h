@@ -263,6 +263,7 @@ class Mouse {
     set_steering_mode(STEER_NORMAL);
     motion.set_position(SENSING_POSITION-FULL_CELL);
     motion.wait_until_position(HALF_CELL);
+    LED4_OFF;
     set_steering_mode(STEERING_OFF);
     motion.wait_until_position(SENSING_POSITION);
   }
@@ -278,6 +279,7 @@ class Mouse {
     else {
       motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     }
+    LED4_OFF;
 
     set_steering_mode(STEERING_OFF);
     wall_adjustment();
@@ -300,6 +302,7 @@ class Mouse {
     else {
       motion.move(FULL_CELL*1.5-SENSING_POSITION, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     }
+    LED4_OFF;
     set_steering_mode(STEERING_OFF);
     wall_adjustment();
     turn_IP90R();
@@ -356,7 +359,7 @@ class Mouse {
     motion.wait_until_position(SENSING_POSITION);
     // at the start of this loop we are always at the sensing point
     while (m_location != target) {
-      if (switches.button_pressed()) {
+      if (switches.key_pressed()) {
         break;
       }
       print("\n");
@@ -516,7 +519,7 @@ class Mouse {
     motion.wait_until_position(SENSING_POSITION);
     // Each iteration of this loop starts at the sensing point
     while (m_location != target) {
-      if (switches.button_pressed()) {  // allow user to abort gracefully
+      if (switches.key_pressed()) {  // allow user to abort gracefully
         break;
       }
       //print("e\n");
@@ -631,7 +634,7 @@ class Mouse {
     motion.wait_until_position(SENSING_POSITION);
     // at the start of this loop we are always at the sensing point
     while (m_location != target) {
-      if (switches.button_pressed()) {
+      if (switches.key_pressed()) {
         break;
       }
       print("\n");
@@ -824,10 +827,10 @@ class Mouse {
    * just sit in a loop, flashing lights waiting for the button to be pressed
    */
   void panic() {
-    while (!switches.button_pressed()) {
+    while (!switches.key_pressed()) {
       blink(1);
     }
-    switches.wait_for_button_release();
+    switches.wait_for_key_release();
     LED1_OFF;
   }
 
@@ -1023,10 +1026,10 @@ class Mouse {
   void show_sensor_calibration() {
     //reporter.wall_sensor_header();
     enable();
-    while (not switches.button_pressed()) {
+    while (not switches.key_pressed()) {
       //reporter.print_wall_sensors();
     }
-    switches.wait_for_button_release();
+    switches.wait_for_key_release();
     print("\n");
     delay_ms(200);
     disable();
@@ -1061,7 +1064,7 @@ class Mouse {
     motion.wait_until_position(SENSING_POSITION);
     // Each iteration of this loop starts at the sensing point
     while (m_location != target) {
-      if (switches.button_pressed()) {  // allow user to abort gracefully
+      if (switches.key_pressed()) {  // allow user to abort gracefully
         break;
       }
       //print("e\n");
@@ -1082,8 +1085,6 @@ class Mouse {
       if (m_location != target) {
         print("%d \n", hdgChange);
         LED4_ON;
-        delay_us(50);
-        LED4_OFF;
         switch (hdgChange) {
           // each of the following actions will finish with the
           // robot moving and at the sensing point ready for the

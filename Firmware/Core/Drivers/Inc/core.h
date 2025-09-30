@@ -22,6 +22,7 @@
 #include "sensor_Function.h"
 #include "encoder.h"
 #include "adc.h"
+#include "button.h"
 
 #include <cstring>
 #include "button.h"

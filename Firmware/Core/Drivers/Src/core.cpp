@@ -22,7 +22,7 @@ float theta;
 
 void systick(void)
 {
-    if(Millis<2000) return;
+    //if(Millis<2000) return;
     
     //HAL_UART_TxCpltCallback(&huart1);
 
@@ -41,34 +41,118 @@ void systick(void)
 
 int core(void)
 {
+    LED2_ON;
     print("initialing..\r\n");
-    delay_ms(100);
+    delay_ms(1000);
 
     UART_Configurations();
     init_flash();
     Wall_Configuration();
     LED_Configuration();
     IR_Configuration();
-    icm_initialize();
+    if(!switches.key_pressed())icm_initialize();
     Encoder_Configration();
     ADC_Config();
     
     maze.initialise();
     drive_init();
     print("Core initialized\r\n");
+
+    if(switches.key_pressed()){
+       LED1_ON;
+        LED4_ON;
+        print("Boot button pressed, calibration mode\r\n");
+        is_calibrate = 1;
+        while(switches.boot_pressed());
+        delay_ms(1000);
+        LEDS_OFF;
+        cal_initial_wall();
+    }
+
     is_sensor_active = true;
     maze.set_goal(Location(7, 7)); //default goal
 
     Systick_Configuration();
 
+    if(switches.boot_pressed()){
+        
+    }
+
+    
+
     while (1)
     {
+        if(switches.key_pressed()){
+            uint8_t is_decided = 0;
+            LED4_ON;
+            drive_enable();
+            is_mouse_enable = 1;
+            delay_ms(1000);
+            while(!is_decided){
+                if(occluded_left()){
+                    print("Left start selected\r\n");
+                    is_decided = 1;
+                    maze.set_goal(Location(1, 1));
+                    while(occluded_left());
+                }
+                else if(occluded_right()){is_decided = 1;}
+            }
+            print("Start in 2 seconds\r\n");
+            LEDS_ON;
+            delay_ms(500);
+            LED4_OFF;
+            delay_ms(500);
+            LED3_OFF;
+            delay_ms(500);
+            LED2_OFF;
+            delay_ms(500);
+            LED1_OFF;
+            print("Search started\n");
+            mouse.search(maze.goal());
+            is_mouse_enable = 0;
+            drive_disable();
+            maze.save_to_flash();
+            maze.set_goal(Location(0, 0));
+            drive_enable();
+            is_mouse_enable = 1;
+            mouse.search(maze.goal());
+            is_mouse_enable = 0;
+            drive_disable();
+            maze.save_to_flash();
+        }else{
+            LED2_OFF;
+        }
+
+        if(switches.boot_pressed()){
+            LED3_ON;
+            print("Boot button pressed, fast run mode\r\n");
+            while(switches.boot_pressed());
+            delay_ms(1000);
+            LED3_OFF;
+            delay_ms(1000);
+            maze.load_from_flash();
+            maze.set_goal(Location(1, 1));
+            is_mouse_enable = 1;
+            drive_enable();
+            mouse.search(maze.goal());
+            is_mouse_enable = 0;
+            drive_disable();
+            maze.set_goal(Location(0, 0));
+            drive_enable();
+            is_mouse_enable = 1;
+            mouse.search(maze.goal());
+            is_mouse_enable = 0;
+            drive_disable();
+        }else{
+            LED1_OFF;
+        }
+
         delay_ms(1);
         readVolMeter();
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
         { // 500ms = 2 times per second
-            LED2_TOGGLE;
+            //LED2_TOGGLE;
             lowBatCheck();
             lastTick = HAL_GetTick();
             // print("L %d R %d FL %d FR %d aSpeed %.2f angle %.2f voltage %d lenc %d renc %d\r\n", LSensor, RSensor, FLSensor, FRSensor, get_gyroZ(), angle, voltage, getLeftEncCount(), getRightEncCount());
