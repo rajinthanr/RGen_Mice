@@ -255,7 +255,7 @@ void SystemCoreClockUpdate(void)
       SystemCoreClock = pllvco/pllp;
       break;
     default:
-      SystemCoreClock = HSI_VALUE;
+       SystemCoreClock = HSI_VALUE;
       break;
   }
   /* Compute HCLK frequency --------------------------------------------------*/

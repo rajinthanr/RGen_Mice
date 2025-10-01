@@ -174,38 +174,33 @@ class Mouse {
    * TODO: There is only just enough space to get down to turn speed. Increase turn speed?
    *
    */
-  void turn_smooth(int turn_id) {
+  void turn_smooth_right() {
+    set_steering_mode(STEER_NORMAL);
+    if(!maze.is_exit(m_location,m_heading)){
+      motion.move(2*(FULL_CELL-SENSING_POSITION)-20, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      float remaining = ((dis_reading[FL]+dis_reading[FR])/2 - SENSING_POSITION)-POLE_WIDTH/2;
+      mouse.is_front_adjust = 1;
+      motion.move(remaining, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      mouse.is_front_adjust = 0;
+    }
+    else {
+      motion.move(2*(FULL_CELL-SENSING_POSITION), SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    }
+    LED4_OFF;
+
     set_steering_mode(STEERING_OFF);
-    motion.set_target_velocity(SEARCH_TURN_SPEED);
-    TurnParameters params = turn_params[turn_id];
+    
+    float perimeter = 0.25 * 2.0f * 3.14159f * (SENSING_POSITION - HALF_CELL);
+    float omega = 90/(perimeter/SEARCH_SPEED); // deg/s
+    motion.start_turn(-90.0f, omega,omega,10000);
+    motion.move(perimeter, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.set_target_omega(0);
 
-    float trigger = params.trigger;
-    if (is_wall(L)) {
-      trigger += EXTRA_WALL_ADJUST;
-    }
-    if (is_wall(R)) {
-      trigger += EXTRA_WALL_ADJUST;
-    }
-
-    bool triggered_by_sensor = false;
-    float turn_point = FULL_CELL + HALF_CELL - params.entry_offset;
-    // Now we wait until we detect the turn start condition
-    // TODO: there is room for improvement here
-    while (motion.position() < turn_point) {
-      if (get_front_sum() <20) {
-        motion.set_target_velocity(motion.velocity());  // prevent speed changes
-        triggered_by_sensor = true;
-        break;
-      }
-    }
-    char note = triggered_by_sensor ? 's' : 'd';
-    //reporter.log_action_status(dir, note, m_location, m_heading);  // the sensors triggered the turn
-    // finally we get to actually turn
-    motion.turn(params.angle, params.omega, 0, params.alpha);
-    // robot should be at output offset - run to the sensing position
-    int end_point = HALF_CELL + params.exit_offset;
-    motion.move(SENSING_POSITION - end_point, motion.velocity(), SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     motion.set_position(SENSING_POSITION);
+    //turn_smooth(SS90EL);
+    m_heading = left_from(m_heading);
+
   }
 
   //***************************************************************************//
@@ -272,8 +267,8 @@ class Mouse {
   void turn_left() {
     set_steering_mode(STEER_NORMAL);
     if(!maze.is_exit(m_location,m_heading)){
-      motion.move(FULL_CELL+HALF_CELL/2-SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
-      float remaining = ((dis_reading[FL]+dis_reading[FR])/2 - HALF_CELL);
+      motion.move(FULL_CELL+HALF_CELL/2-SENSING_POSITION-20, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      float remaining = ((dis_reading[FL]+dis_reading[FR])/2 - HALF_CELL)-POLE_WIDTH/2;
       motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     } 
     else {
@@ -295,8 +290,8 @@ class Mouse {
   void turn_right() {
     set_steering_mode(STEER_NORMAL);
     if(!maze.is_exit(m_location,m_heading)){
-      motion.move(FULL_CELL+HALF_CELL/2-SENSING_POSITION, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
-      float remaining = ((dis_reading[FL]+dis_reading[FR])/2 - HALF_CELL);
+      motion.move(FULL_CELL+HALF_CELL/2-SENSING_POSITION-20, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      float remaining = ((dis_reading[FL]+dis_reading[FR])/2 - HALF_CELL)-POLE_WIDTH/2;
       motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     } 
     else {
@@ -996,9 +991,9 @@ class Mouse {
     motion.set_position(FULL_CELL);
 
     if (side == RIGHT_START) {
-      turn_smooth(SS90ER);
+      //turn_smooth(SS90ER);
     } else {
-      turn_smooth(SS90EL);
+      //turn_smooth(SS90EL);
     }
     // after the turn, estimate the angle error by looking for
     // changes in the side sensor readings
@@ -1093,7 +1088,8 @@ class Mouse {
             move_ahead();
             break;
           case RIGHT:
-            turn_right();
+            //turn_right();
+            turn_smooth_right() ;
             break;
           case BACK:
             turn_back();
