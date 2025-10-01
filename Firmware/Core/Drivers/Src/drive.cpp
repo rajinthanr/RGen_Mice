@@ -155,6 +155,7 @@ void drive_init()
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_3);
     HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+    LED3_OFF;
 }
 
 void reset_pwm(){
@@ -170,12 +171,14 @@ void drive_enable()
     mouse.target_dis = get_forward_dis();
     // Set PB2 high to enable motors
     HAL_GPIO_WritePin(MOT_ENABLE_GPIO_Port, MOT_ENABLE_Pin, GPIO_PIN_SET);
+    LED3_OFF;
 }
 
 void drive_disable()
 {
     // Set PB2 low to disable motors
     HAL_GPIO_WritePin(MOT_ENABLE_GPIO_Port, MOT_ENABLE_Pin, GPIO_PIN_RESET);
+    LED3_OFF;
 }
 
 // Function to set differential drive speeds (-1 to 1)
@@ -188,12 +191,6 @@ void drive_dif(float left_speed, float right_speed)
 
     static float prev_left = 0.0f;
     static float prev_right = 0.0f;
-
-    // Clamp
-    prev_left = left_speed;
-    prev_right = right_speed;
-    left_speed = fmaxf(fminf(left_speed, 0.9f), -0.9f);
-    right_speed = fmaxf(fminf(right_speed, 0.9f), -0.9f);
 
     
     // Convert to PWM (0 to 4095)
@@ -211,8 +208,8 @@ void drive_dif(float left_speed, float right_speed)
 
     // Protection: if sign changes, insert a brief neutral (coast) period
     if ((left_speed > 0 && prev_left < 0) || (left_speed < 0 && prev_left > 0)) {
-        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 4095);
-        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 4095);
+        // __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, 4095);
+        // __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, 4095);
         //HAL_Delay(2); // 2 ms coast (tune as needed)
     }
     else if (left_speed < 0)
@@ -227,8 +224,8 @@ void drive_dif(float left_speed, float right_speed)
     }
 
     if ((right_speed > 0 && prev_right < 0) || (right_speed < 0 && prev_right > 0)) {
-        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 4095);
-        __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 4095);
+        // __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, 4095);
+        // __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 4095);
         //HAL_Delay(2);
     }
     else if (right_speed < 0)

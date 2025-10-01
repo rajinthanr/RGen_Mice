@@ -59,7 +59,7 @@ int core(void)
     print("Core initialized\r\n");
 
     if(switches.key_pressed()){
-       LED1_ON;
+        LED1_ON;
         LED4_ON;
         print("Boot button pressed, calibration mode\r\n");
         is_calibrate = 1;
@@ -124,11 +124,11 @@ int core(void)
         }
 
         if(switches.boot_pressed()){
-            LED3_ON;
+            LED2_ON;
             print("Boot button pressed, fast run mode\r\n");
             while(switches.boot_pressed());
             delay_ms(1000);
-            LED3_OFF;
+            LED2_OFF;
             delay_ms(1000);
             maze.load_from_flash();
             maze.set_goal(Location(1, 1));

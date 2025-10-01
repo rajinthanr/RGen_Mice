@@ -1106,6 +1106,7 @@ class Mouse {
     }
     // we are entering the target cell so come to an orderly
     // halt in the middle of that cell
+    print("Stopping in center\n");
     stop_at_center();
     disable();
     print("\n");

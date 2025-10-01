@@ -180,5 +180,5 @@ void wallFollow(bool include_left, bool include_right)
 
     dif = clamp(dif, -STEERING_ADJUST_LIMIT, STEERING_ADJUST_LIMIT);
 
-    mouse.steering_adjustment = dif;
+    mouse.steering_adjustment = dif*SEARCH_SPEED/200; // scale with speed  
 }

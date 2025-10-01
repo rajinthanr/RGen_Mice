@@ -192,12 +192,9 @@ void debug()
     }
     else if (strcmp(command, "stop") == 0)
     {
+        mouse.target_angle = angle; //for safety
+        mouse.target_dis = get_forward_dis();
         // Emergency stop: set speeds to zero, stop motors, etc.
-        is_mouse_enable = 0;
-        is_wall_front = 0;
-        is_wall_follow = 0;
-        drive(0, 0);
-        is_run = 0;
         print("Emergency stop triggered!\r\n");
         // Add any additional emergency stop logic here
     }
