@@ -35,6 +35,7 @@ void cal_initial_wall()
     LED4_ON;
     delay_ms(1000);
     LED4_OFF;
+    LED3_ON;
 
     for (int a = 0; a < 4; a++)
     {
@@ -54,9 +55,6 @@ void cal_initial_wall()
         initial_wall[a] = initial_wall[a] / 100;
         wall_threshold[a] = 250;
     }
-
-    LED4_ON;
-    LED3_ON;
 
     for (int a = 0; a < 4; a++)
         putInt(FLASH_CAL_INIT_WALL + a, initial_wall[a]);

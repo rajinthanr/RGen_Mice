@@ -80,6 +80,10 @@ class Motion {
     rotation.set_target_speed(velocity);
   }
 
+  void set_omega(float velocity) {
+    rotation.set_speed(velocity);
+  }
+
   float angle() {
     return rotation.position();
   }

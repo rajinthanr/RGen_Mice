@@ -174,14 +174,46 @@ class Mouse {
    * TODO: There is only just enough space to get down to turn speed. Increase turn speed?
    *
    */
-  void turn_smooth_right() {
-    set_steering_mode(STEER_NORMAL);
+
+  void turn_smooth_left() {
+    set_steering_mode(STEERING_OFF);
     if(!maze.is_exit(m_location,m_heading)){
-      motion.move(2*(FULL_CELL-SENSING_POSITION)-20, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      //motion.move(2*(FULL_CELL-SENSING_POSITION)-20, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
       float remaining = ((dis_reading[FL]+dis_reading[FR])/2 - SENSING_POSITION)-POLE_WIDTH/2;
-      mouse.is_front_adjust = 1;
-      motion.move(remaining, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
-      mouse.is_front_adjust = 0;
+      //mouse.is_front_adjust = 1;
+      //motion.move(remaining, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      //mouse.is_front_adjust = 0;
+    }
+    else {
+      motion.move(2*(FULL_CELL-SENSING_POSITION), SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    }
+    LED4_OFF;
+
+    set_steering_mode(STEERING_OFF);
+    
+    float perimeter = 0.25 * 2.0f * 3.14159f * (SENSING_POSITION - HALF_CELL);
+    float omega = 90/(perimeter/SEARCH_SPEED); // deg/s
+    motion.start_turn(90.0f, omega,omega,100000);
+    motion.move(perimeter, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.set_omega(0);
+    motion.start_turn(-1.0f, 0,0,100000);
+
+    motion.start_move(2*(FULL_CELL-SENSING_POSITION), SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    //turn_smooth(SS90EL);
+    m_heading = left_from(m_heading);
+    set_steering_mode(STEER_NORMAL);
+
+  }
+
+
+  void turn_smooth_right() {
+    set_steering_mode(STEERING_OFF);
+    if(!maze.is_exit(m_location,m_heading)){
+      //motion.move(2*(FULL_CELL-SENSING_POSITION)-20, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      float remaining = ((dis_reading[FL]+dis_reading[FR])/2 - SENSING_POSITION)-POLE_WIDTH/2;
+      //mouse.is_front_adjust = 1;
+      //motion.move(remaining, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      //mouse.is_front_adjust = 0;
     }
     else {
       motion.move(2*(FULL_CELL-SENSING_POSITION), SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
@@ -194,12 +226,13 @@ class Mouse {
     float omega = 90/(perimeter/SEARCH_SPEED); // deg/s
     motion.start_turn(-90.0f, omega,omega,10000);
     motion.move(perimeter, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
-    motion.set_target_omega(0);
+    motion.set_omega(0);
+    motion.start_turn(1.0f, 0,0,10000);
 
-    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
-    motion.set_position(SENSING_POSITION);
+    motion.start_move(2*(FULL_CELL-SENSING_POSITION), SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
     //turn_smooth(SS90EL);
-    m_heading = left_from(m_heading);
+    m_heading = right_from(m_heading);
+    set_steering_mode(STEER_NORMAL);
 
   }
 
@@ -1088,14 +1121,15 @@ class Mouse {
             move_ahead();
             break;
           case RIGHT:
-            //turn_right();
-            turn_smooth_right() ;
+            turn_right();
+            //turn_smooth_right();
             break;
           case BACK:
             turn_back();
             break;
           case LEFT:
             turn_left();
+            //turn_smooth_left();
             break;
         }
       }

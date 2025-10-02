@@ -10,6 +10,8 @@
 
 extern SPI_HandleTypeDef hspi3;
 
+float is_icm_initialized = 0;
+
 float acc_data_X;
 float acc_data_Y;
 float acc_data_Z;
@@ -155,10 +157,12 @@ void icm_initialize()
 	offset_gyro_x = avg_gyro_x;
 	offset_gyro_y = avg_gyro_y;
 	offset_gyro_z = avg_gyro_z;
+	is_icm_initialized = 1;
 }
 
 void read_values()
 {
+	if(!is_icm_initialized) return;
 	// Pull CS low to start SPI transaction
 	cs(0);
 	uint8_t reg_addr = 0x1F | 0x80; // Register address with read bit set

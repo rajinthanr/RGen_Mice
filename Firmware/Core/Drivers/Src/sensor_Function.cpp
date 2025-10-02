@@ -59,7 +59,7 @@ bool is_wall(int w)
 {
     if (w == FL || w == FR)
         return (dis_reading[FL] + dis_reading[FR]) <= 550;
-    return dis_reading[w] <= 120;
+    return dis_reading[w] <= 150;
 }
 
 void set_steering_mode(uint8_t mode) {

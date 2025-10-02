@@ -100,7 +100,7 @@ const float HALF_CELL = FULL_CELL / 2.0;
 const float POLE_WIDTH = 12.0f;
 
 // the position in the cell where the sensors are sampled.
-const float SENSING_POSITION = 150.0;
+const float SENSING_POSITION = 190.0;
 
 //***** SENSOR DISTANCE *****************************************************//
 
@@ -244,7 +244,7 @@ const float STEERING_ADJUST_LIMIT = 10.0;  // deg/s
 
 //***** PERFORMANCE CONSTANTS************************************************//
 // search and run speeds in mm/s and mm
-const int SEARCH_SPEED = 100;
+const int SEARCH_SPEED = 250;
 //#define SEARCH_SPEED mouse.max_linear_speed
 const int SEARCH_ACCELERATION = 2000;
 const int SEARCH_TURN_SPEED = 100;

@@ -43,14 +43,13 @@ int core(void)
 {
     LED2_ON;
     print("initialing..\r\n");
-    delay_ms(1000);
+    delay_ms(100);
 
     UART_Configurations();
     init_flash();
     Wall_Configuration();
     LED_Configuration();
     IR_Configuration();
-    if(!switches.key_pressed())icm_initialize();
     Encoder_Configration();
     ADC_Config();
     
@@ -107,6 +106,7 @@ int core(void)
             LED2_OFF;
             delay_ms(500);
             LED1_OFF;
+            icm_initialize();
             print("Search started\n");
             mouse.search(maze.goal());
             is_mouse_enable = 0;
@@ -120,7 +120,7 @@ int core(void)
             drive_disable();
             maze.save_to_flash();
         }else{
-            LED2_OFF;
+            
         }
 
         if(switches.boot_pressed()){
@@ -130,6 +130,7 @@ int core(void)
             delay_ms(1000);
             LED2_OFF;
             delay_ms(1000);
+            icm_initialize();
             maze.load_from_flash();
             maze.set_goal(Location(1, 1));
             is_mouse_enable = 1;
@@ -144,7 +145,7 @@ int core(void)
             is_mouse_enable = 0;
             drive_disable();
         }else{
-            LED1_OFF;
+            
         }
 
         delay_ms(1);
@@ -152,7 +153,7 @@ int core(void)
         static uint32_t lastTick = 0;
         if (HAL_GetTick() - lastTick >= 500)
         { // 500ms = 2 times per second
-            //LED2_TOGGLE;
+            LED2_TOGGLE;
             lowBatCheck();
             lastTick = HAL_GetTick();
             // print("L %d R %d FL %d FR %d aSpeed %.2f angle %.2f voltage %d lenc %d renc %d\r\n", LSensor, RSensor, FLSensor, FRSensor, get_gyroZ(), angle, voltage, getLeftEncCount(), getRightEncCount());
@@ -161,6 +162,7 @@ int core(void)
 
         if (is_run)
         {
+            icm_initialize();
             //static int8_t state = -1;
             //drive_dif(state,state);
             //state = -state;
