@@ -157,12 +157,13 @@ void icm_initialize()
 	offset_gyro_x = avg_gyro_x;
 	offset_gyro_y = avg_gyro_y;
 	offset_gyro_z = avg_gyro_z;
+
+	
 	is_icm_initialized = 1;
 }
 
 void read_values()
 {
-	if(!is_icm_initialized) return;
 	// Pull CS low to start SPI transaction
 	cs(0);
 	uint8_t reg_addr = 0x1F | 0x80; // Register address with read bit set
@@ -227,6 +228,7 @@ float get_accY(){
 
 float get_gyroZ()
 {
+	if(!is_icm_initialized) return 0;
 	// Pull CS low to start SPI transaction
 	uint8_t data[2];
 	cs(0);

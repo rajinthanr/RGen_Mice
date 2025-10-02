@@ -91,7 +91,7 @@ int core(void)
                 if(occluded_left()){
                     print("Left start selected\r\n");
                     is_decided = 1;
-                    maze.set_goal(Location(1, 1));
+                    maze.set_goal(Location(3, 2));
                     while(occluded_left());
                 }
                 else if(occluded_right()){is_decided = 1;}
@@ -132,7 +132,7 @@ int core(void)
             delay_ms(1000);
             icm_initialize();
             maze.load_from_flash();
-            maze.set_goal(Location(1, 1));
+            maze.set_goal(Location(3, 2));
             is_mouse_enable = 1;
             drive_enable();
             mouse.search(maze.goal());
