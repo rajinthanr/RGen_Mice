@@ -2,6 +2,9 @@
 #define ADC_H
 
 #ifdef __cplusplus
+#include "core.h"
+#include "main.h"
+#include "stdint.h"
 extern "C"
 {
 #endif

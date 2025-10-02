@@ -2,18 +2,17 @@
 #define BUTTON_H
 
 #ifdef __cplusplus
-extern "C"
-{
+#include "core.h"
+extern "C" {
 #endif
 
-    void button_Configuration(void);
+void button_Configuration(void);
 
-
-    class Switches;
+class Switches;
 // so that we can declare the instance
 extern Switches switches;
 class Switches {
- public:
+public:
   explicit Switches(){};
 
   bool key_pressed() {
@@ -42,7 +41,7 @@ class Switches {
     delay_ms(250);
   }
 
- private:
+private:
 };
 
 #ifdef __cplusplus
