@@ -132,7 +132,7 @@ int core(void) {
           left_init = getLeftEncCount();
         }
 
-        if (getRightEncCount() - right_init > 50) {
+        if (getRightEncCount() - right_init > 60) {
           mouse.is_smooth_turn = 1;
           right_init = getRightEncCount();
         } else if (getRightEncCount() - right_init < -50) {
