@@ -363,18 +363,27 @@ public:
    * It only takes 27mm of travel to come to a halt from normal search speed.
    */
   void turn_back() {
-    // reporter.log_action_status('B', ' ', m_location, m_heading);
-    // stop_at_center();
-    motion.move(FULL_CELL * 1.5 - SENSING_POSITION, SEARCH_SPEED, 0,
-                SEARCH_ACCELERATION);
+    set_steering_mode(STEER_NORMAL);
+    if (!maze.is_exit(m_location, m_heading)) {
+      motion.move(FULL_CELL + HALF_CELL / 2 - SENSING_POSITION - 20,
+                  SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+      float remaining = ((dis_reading[FL] + dis_reading[FR]) / 2 - HALF_CELL) -
+                        POLE_WIDTH / 2;
+      motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    } else {
+      motion.move(FULL_CELL * 1.5 - SENSING_POSITION, SEARCH_SPEED, 0,
+                  SEARCH_ACCELERATION);
+    }
+    // LED4_OFF;
+    set_steering_mode(STEERING_OFF);
     wall_adjustment();
     turn_IP180();
-
     motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
                       SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
     motion.wait_until_position(SENSING_POSITION);
-    m_heading = behind_from(m_heading);
+    // turn_smooth(SS90ER);
+    m_heading = right_from(m_heading);
   }
 
   //***************************************************************************//
@@ -1098,7 +1107,8 @@ public:
 
   //***************************************************************************//
 
-  void search(Location target) {
+  uint8_t search(Location target) {
+    uint8_t is_hit_target = 0;
     maze.flood(target);
     Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
     if (newHeading == BLOCKED) {
@@ -1185,6 +1195,7 @@ public:
     delay_ms(250);
     motion.reset_drive_system();
     set_steering_mode(STEERING_OFF);
+    return m_location == target;
   }
   /****************************************************************************/
 };

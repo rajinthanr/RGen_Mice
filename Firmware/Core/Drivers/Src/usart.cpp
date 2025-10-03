@@ -139,7 +139,7 @@ void debug() {
           get_accY(), cell_1 / 1000, cell_2 / 1000, getLeftEncCount(),
           getRightEncCount(), get_forward_dis());
     print("angular speed: %.2f\n", mouse.angular_speed);
-    print("Target theta: %.2f Target dis: %.2f error_theta: %.2f\n-------\n ",
+    print("Target theta: %.2f Target dis: %.2f wall_front: %.2f\n-------\n ",
           mouse.target_angle, mouse.target_dis, wallFront());
   }
 
@@ -220,9 +220,9 @@ void debug() {
 
 #define POST 'o'
 #define ERR '?'
-#define GAP "     "
-#define H_WALL "---"
-#define H_EXIT "    -"
+#define GAP "         "
+#define H_WALL "------"
+#define H_EXIT "       "
 #define H_UNKN "···"
 #define H_VIRT "###"
 #define V_WALL '|'

@@ -1,13 +1,13 @@
 // #include "global.h"
-#include "main.h"
 #include "sensor_Function.h"
 #include "adc.h"
+#include "core.h"
 #include "delay.h"
-#include "pwm.h"
-#include "led.h"
 #include "encoder.h"
 #include "icm.h"
-#include "core.h"
+#include "led.h"
+#include "main.h"
+#include "pwm.h"
 
 int reflectionRate = 1000; // which is 1.000 (converted to ingeter)
 float cell_1 = 0;
@@ -30,254 +30,280 @@ uint8_t NO_START = 0;
 uint8_t LEFT_START = 1;
 uint8_t RIGHT_START = 2;
 
+int max_difference[4];
 
-float dist(int ir_num)
-{
-    if (reading[ir_num] < 10)
-        return 1000;
+float dist(int ir_num) {
+  if (reading[ir_num] < 10)
+    return 1000;
 
-    else
-    {
-        float ratio = 1.0 * initial_wall[ir_num] / reading[ir_num];
-        if (ratio >= 0)
-        {
-			float distance = 0;
-			if(ir_num == L || ir_num == R) distance = SIDE_WALL_DISTANCE_CAL*sqrt(ratio);
-			else distance = FRONT_WALL_DISTANCE_CAL*sqrt(ratio);
+  else {
+    float ratio = 1.0 * initial_wall[ir_num] / reading[ir_num];
+    if (ratio >= 0) {
+      float distance = 0;
+      if (ir_num == L || ir_num == R)
+        distance = SIDE_WALL_DISTANCE_CAL * sqrt(ratio);
+      else
+        distance = FRONT_WALL_DISTANCE_CAL * sqrt(ratio);
 
-         return distance;
-        }
-        else
-        {
-            return 9000;
-        }
+      return distance;
+    } else {
+      return 9000;
     }
+  }
 }
 
-
-bool is_wall(int w)
-{
-    if (w == FL || w == FR)
-        return (dis_reading[FL] + dis_reading[FR]) <= 550;
-    return dis_reading[w] <= 150;
+bool is_wall(int w) {
+  if (w == FL || w == FR)
+    return (dis_reading[FL] + dis_reading[FR]) <= 550;
+  return dis_reading[w] <= 150;
 }
 
 void set_steering_mode(uint8_t mode) {
-	if(mouse.steering_mode == GYRO_OFF){
-		angle = mouse.target_angle;
-	}
-   mouse.last_steering_error = 0;
-   mouse.steering_adjustment = 0;
-   mouse.steering_mode = mode;
+  if (mouse.steering_mode == GYRO_OFF) {
+    angle = mouse.target_angle;
   }
+  mouse.last_steering_error = 0;
+  mouse.steering_adjustment = 0;
+  mouse.steering_mode = mode;
+}
 
 /*read IR sensors*/
-void readSensor(void)
-{
-	//if(is_sensor_active == false) return;
-	uint32_t curt;
-	// read DC value
+void readSensor(void) {
+  // if(is_sensor_active == false) return;
+  uint32_t curt;
+  // read DC value
 
-	LSensor = read_L_Sensor;
-	RSensor = read_R_Sensor;
-	FLSensor = read_FL_Sensor;
-	FRSensor = read_FR_Sensor;
+  // Take 'average' readings and compute the average for each sensor
+  int avg_count = 1; // You can change this value or pass as a parameter
 
-	curt = micros();
+  int l_sum = 0, r_sum = 0, fl_sum = 0, fr_sum = 0;
+  for (int i = 0; i < avg_count; ++i) {
+    l_sum += read_L_Sensor;
+    r_sum += read_R_Sensor;
+    fl_sum += read_FL_Sensor;
+    fr_sum += read_FR_Sensor;
+  }
+  LSensor = l_sum / avg_count;
+  RSensor = r_sum / avg_count;
+  FLSensor = fl_sum / avg_count;
+  FRSensor = fr_sum / avg_count;
 
-	// left front sensor
-	L_EM_ON;
-	elapseMicros(80, curt);
-	LSensor = read_L_Sensor - LSensor;
-	L_EM_OFF;
-	if (LSensor < 0) // error check
-		LSensor = 0;
-	//elapseMicros(140, curt);
-	// right front sensor
-	R_EM_ON;
-	elapseMicros(160, curt);
-	RSensor = read_R_Sensor - RSensor;
-	R_EM_OFF;
-	if (RSensor < 0)
-		RSensor = 0;
-	//elapseMicros(280, curt);
-	// diagonal sensors
-	FL_EM_ON;
-	FR_EM_ON;
-	elapseMicros(240, curt);
-	FLSensor = read_FL_Sensor - FLSensor;
-	FRSensor = read_FR_Sensor - FRSensor;
-	FL_EM_OFF;
-	FR_EM_OFF;
-	if (FLSensor < 0)
-		FLSensor = 0;
-	if (FRSensor < 0)
-		FRSensor = 0;
+  curt = micros();
 
-	//readVolMeter();
+  // left front sensor
+  L_EM_ON;
+  elapseMicros(80, curt);
+  // Take 100 readings and compute the average for LSensor after L_EM_ON
+  int l_em_sum = 0;
+  for (int i = 0; i < avg_count; ++i)
+    l_em_sum += read_L_Sensor;
+  LSensor = (l_em_sum / avg_count) - LSensor;
+  L_EM_OFF;
+  if (LSensor < 0) // error check
+    LSensor = 0;
 
-	LSensor = LSensor * reflectionRate / 1000;
-	RSensor = RSensor * reflectionRate / 1000;
-	FLSensor = FLSensor * reflectionRate / 1000;
-	FRSensor = FRSensor * reflectionRate / 1000;
+  // elapseMicros(140, curt);
+  //  right front sensor
+  R_EM_ON;
+  elapseMicros(160, curt);
+  // Take 100 readings and compute the average for RSensor after R_EM_ON
+  int r_em_sum = 0;
+  for (int i = 0; i < avg_count; ++i)
+    r_em_sum += read_R_Sensor;
+  RSensor = (r_em_sum / avg_count) - RSensor;
+  R_EM_OFF;
+  if (RSensor < 0)
+    RSensor = 0;
+  // elapseMicros(280, curt);
+  //  diagonal sensors
+  FL_EM_ON;
+  elapseMicros(240, curt);
+  // Take 100 readings and compute the average for FLSensor after FL_EM_ON
+  int fl_em_sum = 0;
+  for (int i = 0; i < avg_count; ++i)
+    fl_em_sum += read_FL_Sensor;
+  FLSensor = (fl_em_sum / avg_count) - FLSensor;
 
-	reading[0] = LSensor;
-	reading[1] = FLSensor;
-	reading[2] = FRSensor;
-	reading[3] = RSensor;
+  FR_EM_ON;
+  elapseMicros(320, curt);
+  // Take 100 readings and compute the average for FRSensor after FR_EM_ON
+  int fr_em_sum = 0;
+  for (int i = 0; i < avg_count; ++i)
+    fr_em_sum += read_FR_Sensor;
+  FRSensor = (fr_em_sum / avg_count) - FRSensor;
+  FL_EM_OFF;
+  FR_EM_OFF;
+  if (FLSensor < 0)
+    FLSensor = 0;
+  if (FRSensor < 0)
+    FRSensor = 0;
 
-	for (int i = 0; i < 4; i++)
-	{
-		dis_reading[i] = dist(i);
-	}
-	dis_reading[FL] += FRONT_SENSOR_DISPLACEMENT;
-	dis_reading[FR] += FRONT_SENSOR_DISPLACEMENT;
-	dis_reading[L] += SIDE_SENSOR_SPACING / 2;
-	dis_reading[R] += SIDE_SENSOR_SPACING / 2;
+  // readVolMeter();
+  static int sensor_history[4][100];
+  static int history_index = 0;
 
-	// delay_us(80);
-	// elapseMicros(500,curt);
+  // Store the current readings for all 4 sensors
+  sensor_history[0][history_index] = LSensor;
+  sensor_history[1][history_index] = FLSensor;
+  sensor_history[2][history_index] = FRSensor;
+  sensor_history[3][history_index] = RSensor;
+
+  // Find max difference for each sensor
+  max_difference[4] = {0};
+  for (int s = 0; s < 4; s++) {
+    int max_val = sensor_history[s][1];
+    int min_val = sensor_history[s][1];
+    for (int i = 1; i < 100; i++) {
+      if (sensor_history[s][i] > max_val)
+        max_val = sensor_history[s][i];
+      if (sensor_history[s][i] < min_val)
+        min_val = sensor_history[s][i];
+    }
+    max_difference[s] = max_val - min_val;
+  }
+
+  reading[0] = LSensor;
+  reading[1] = FLSensor;
+  reading[2] = FRSensor;
+  reading[3] = RSensor;
+
+  history_index = (history_index + 1) % 100;
+
+  for (int i = 0; i < 4; i++) {
+    dis_reading[i] = dist(i);
+  }
+  dis_reading[FL] += FRONT_SENSOR_DISPLACEMENT;
+  dis_reading[FR] += FRONT_SENSOR_DISPLACEMENT;
+  dis_reading[L] += SIDE_SENSOR_SPACING / 2;
+  dis_reading[R] += SIDE_SENSOR_SPACING / 2;
+
+  // delay_us(80);
+  // elapseMicros(500,curt);
 }
 // there are 1000 - 340 = 660 us remaining in a 1ms_ISR
 
-float get_front_sum()
-{
-	return dis_reading[FL] + dis_reading[FR];
-}
+float get_front_sum() { return dis_reading[FL] + dis_reading[FR]; }
 
 /*read gyro*/
-void readGyro(void)
-{ // k=19791(sum for sample in 1 second)    101376287 for 50 seconds with 5000 samples
-	aSpeed = get_gyroZ();
+void readGyro(void) { // k=19791(sum for sample in 1 second)    101376287 for 50
+                      // seconds with 5000 samples
+  aSpeed = get_gyroZ();
 
-	float LOOP_INTERVAL = 0.001;
-	angle += aSpeed * LOOP_INTERVAL;
+  float LOOP_INTERVAL = 0.001;
+  angle += aSpeed * LOOP_INTERVAL;
 }
 
-void safety_stop(int duration = 100)
-{
-	drive_disable();
-	drive(0, 0);
-	LEDS_OFF;
+void safety_stop(int duration = 100) {
+  drive_disable();
+  drive(0, 0);
+  LEDS_OFF;
 
-	while (1)
-	{
-		LEDS_OFF;
-		delay_ms(duration*4);
+  while (1) {
+    LEDS_OFF;
+    delay_ms(duration * 4);
 
-		LED3_ON;
-		delay_ms(duration);
-	}
+    LED3_ON;
+    delay_ms(duration);
+  }
 }
 
-void collisionAvoidance(void)
-{
-	if (abs(get_accY()) > 40) // If acceleration in Y direction exceeds 2 m/s^2
-	{
-		print("Collision detected!");
-		safety_stop(100);
-	}
+void collisionAvoidance(void) {
+  if (abs(get_accY()) > 40) // If acceleration in Y direction exceeds 2 m/s^2
+  {
+    print("Collision detected!");
+    safety_stop(100);
+  }
 }
 
 /*read voltage meter*/
-void readVolMeter(void)
-{										// 3240 = 7.85V
-	volMeter = read_Vol_Meter; // raw value
-	float c3_7 = readADC(2);
-	float v7_4 = readADC(3);
+void readVolMeter(void) { // 3240 = 7.85V
+  float c3_7 = readADC(2);
+  float v7_4 = readADC(3);
 
-	c3_7 = c3_7 * 0.488 * 3.3;
-	v7_4 = v7_4 * 0.731 * 3.3;
+  c3_7 = c3_7 * 0.488 * 3.3;
+  v7_4 = v7_4 * 0.731 * 3.3;
 
-	cell_1 = c3_7;
-	cell_2 = v7_4 - c3_7;
+  cell_1 = c3_7;
+  cell_2 = v7_4 - c3_7;
 }
 
-void lowBatCheck(void)
-{
-	if (cell_1 < 3500 || cell_2 < 3500) // alert when battery Voltage lower than 7V
-	{
-		print("Low battery detected!");
-		safety_stop();
-	}
-}
-
-void IR_Configuration(void)
-{
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-	GPIO_InitStruct.Pin = TR_L_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(TR_L_GPIO_Port, &GPIO_InitStruct);
-
-	GPIO_InitStruct.Pin = TR_R_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(TR_R_GPIO_Port, &GPIO_InitStruct);
-
-	GPIO_InitStruct.Pin = TR_FL_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(TR_FL_GPIO_Port, &GPIO_InitStruct);
-
-	GPIO_InitStruct.Pin = TR_FR_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(TR_FR_GPIO_Port, &GPIO_InitStruct);
-}
-
-void enable(){
-	is_sensor_active = true;
-}
-
-void disable(){
-	is_sensor_active = false;
-}
-
-uint8_t occluded_left() {
-    return dis_reading[FL] < 80 && dis_reading[FR] > 80 ;
+void lowBatCheck(void) {
+  if (cell_1 < 3500 ||
+      cell_2 < 3500) // alert when battery Voltage lower than 7V
+  {
+    print("Low battery detected!");
+    safety_stop();
   }
+}
+
+void IR_Configuration(void) {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  GPIO_InitStruct.Pin = TR_L_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TR_L_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = TR_R_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TR_R_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = TR_FL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TR_FL_GPIO_Port, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = TR_FR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TR_FR_GPIO_Port, &GPIO_InitStruct);
+}
+
+void enable() { is_sensor_active = true; }
+
+void disable() { is_sensor_active = false; }
+
+uint8_t occluded_left() { return dis_reading[FL] < 80 && dis_reading[FR] > 80; }
 
 uint8_t occluded_right() {
-    return dis_reading[FL] > 80 && dis_reading[FR] < 80;
-  }
-
+  return dis_reading[FL] > 80 && dis_reading[FR] < 80;
+}
 
 uint8_t wait_for_user_start() {
-    int state = 0;
-    LED3_ON;
-    enable();
-    uint8_t choice = NO_START;
-    while (choice == NO_START) {
-      int count = 0;
-      while (occluded_left()) {
-        count++;
-        delay_ms(20);
-      }
-      if (count > 5) {
-        choice = LEFT_START;
-        break;
-      }
-      count = 0;
-      while (occluded_right()) {
-        count++;
-        delay_ms(20);
-      }
-      if (count > 5) {
-        choice = RIGHT_START;
-        break;
-      }
-      LED3_ON;
-      state = 1 - state;
-      delay_ms(25);
+  int state = 0;
+  LED3_ON;
+  enable();
+  uint8_t choice = NO_START;
+  while (choice == NO_START) {
+    int count = 0;
+    while (occluded_left()) {
+      count++;
+      delay_ms(20);
     }
-    disable();
-    LED3_OFF;
-    delay_ms(250);
-    return choice;
+    if (count > 5) {
+      choice = LEFT_START;
+      break;
+    }
+    count = 0;
+    while (occluded_right()) {
+      count++;
+      delay_ms(20);
+    }
+    if (count > 5) {
+      choice = RIGHT_START;
+      break;
+    }
+    LED3_ON;
+    state = 1 - state;
+    delay_ms(25);
   }
+  disable();
+  LED3_OFF;
+  delay_ms(250);
+  return choice;
+}

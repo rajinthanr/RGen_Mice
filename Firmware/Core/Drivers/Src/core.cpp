@@ -19,6 +19,8 @@ uint8_t is_wall_follow = 0;
 
 float theta;
 
+uint32_t duration;
+
 void systick(void) {
   if (is_mouse_enable) {
     readGyro();
@@ -65,6 +67,7 @@ int core(void) {
   Systick_Configuration();
 
   while (1) {
+
     if (switches.boot_pressed()) {
       uint8_t is_decided = 0;
       LED2_ON;
@@ -76,14 +79,14 @@ int core(void) {
         if (occluded_left()) {
           LED1_ON;
           print("Left start selected\n");
-          maze.set_goal(Location(2, 5));
+          maze.set_goal(Location(5, 11));
           is_decided = 1;
 
         } else if (occluded_right()) {
           LED4_ON;
           print("Right start selected\n");
           maze.load_from_flash();
-          maze.set_goal(Location(2, 5));
+          maze.set_goal(Location(5, 11));
           is_decided = 1;
         }
       }
@@ -100,17 +103,19 @@ int core(void) {
 
       print("Search started\n");
       drive_enable();
-      mouse.search(maze.goal());
+      uint8_t is_hit_target = mouse.search(maze.goal());
       is_mouse_enable = 0;
       drive_disable();
-      maze.save_to_flash();
+      if (is_hit_target)
+        maze.save_to_flash();
       maze.set_goal(Location(0, 0));
       drive_enable();
       is_mouse_enable = 1;
-      mouse.search(maze.goal());
+      uint8_t is_hit_target = mouse.search(maze.goal());
       is_mouse_enable = 0;
       drive_disable();
-      maze.save_to_flash();
+      if (is_hit_target)
+        maze.save_to_flash();
     } else {
     }
 
