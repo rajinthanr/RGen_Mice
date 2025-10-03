@@ -39,7 +39,6 @@ extern Profile rotation;
  * else. Just be consistent when using speed and acceleration.
  */
 
-
 class Profile {
 private:
   volatile uint8_t m_state = PS_IDLE;
@@ -52,7 +51,7 @@ private:
   float m_final_speed = 0;
   float m_final_position = 0;
 
- public:
+public:
   enum State : uint8_t {
     PS_IDLE = 0,
     PS_ACCELERATING = 1,
@@ -61,17 +60,16 @@ private:
   };
 
   void reset() {
-      m_position = 0;
-      m_speed = 0;
-      m_target_speed = 0;
-      m_state = PS_IDLE;
+    m_position = 0;
+    m_speed = 0;
+    m_target_speed = 0;
+    m_state = PS_IDLE;
   }
 
-  bool is_finished() {
-    return m_state == PS_FINISHED;
-  }
+  bool is_finished() { return m_state == PS_FINISHED; }
 
-  /// @brief  Begin a profile. Once started, it will automatically run to completion
+  /// @brief  Begin a profile. Once started, it will automatically run to
+  /// completion
   ///         Subsequent calls before completion supercede all the parameters.
   ///         Called may monitor progress using is_finished() method
   /// @param distance     (mm)     always positive
@@ -79,7 +77,8 @@ private:
   /// @param final_speed  (mm/s)
   /// @param acceleration (mm/s/s)
 
-  void start(float distance, float top_speed, float final_speed, float acceleration) {
+  void start(float distance, float top_speed, float final_speed,
+             float acceleration) {
     m_sign = (distance < 0) ? -1 : +1;
     if (distance < 0) {
       distance = -distance;
@@ -106,7 +105,8 @@ private:
   }
 
   // Start a profile and wait for it to finish. This is a blocking call.
-  void move(float distance, float top_speed, float final_speed, float acceleration) {
+  void move(float distance, float top_speed, float final_speed,
+            float acceleration) {
     start(distance, top_speed, final_speed, acceleration);
     wait_until_finished();
   }
@@ -115,14 +115,15 @@ private:
   ///        note that even when the state is PS_FINISHED, the profiler will
   ///        continue to try and reach the target speed. (zero in this case)
   void stop() {
-   m_target_speed = 0;
+    m_target_speed = 0;
     finish();
   }
 
-  /// @brief  Force a profile to finish with the target speed set to the final speed
+  /// @brief  Force a profile to finish with the target speed set to the final
+  /// speed
   void finish() {
-      m_speed = m_target_speed;
-      m_state = PS_FINISHED;
+    m_speed = m_target_speed;
+    m_state = PS_FINISHED;
   }
 
   void wait_until_finished() {
@@ -131,23 +132,24 @@ private:
     }
   }
 
-  void set_state(State state) {
-    m_state = state;
-  }
+  void set_state(State state) { m_state = state; }
 
   /// @brief  Calculate the distance needed to get to the final speed from the
   ///         current speed using the current acceleration.
   /// @return distance (mm)
   float get_braking_distance() {
-    return abs(m_speed * m_speed - m_final_speed * m_final_speed) * 0.5 * m_one_over_acc;
+    return abs(m_speed * m_speed - m_final_speed * m_final_speed) * 0.5 *
+           m_one_over_acc;
   }
 
-  /// @brief  gets the distance travelled (mm) since the last call to start(). If there
-  ///         was a prior call to set_position() distance is incremented from there.
+  /// @brief  gets the distance travelled (mm) since the last call to start().
+  /// If there
+  ///         was a prior call to set_position() distance is incremented from
+  ///         there.
   /// @return distance travelled (mm)
   float position() {
     float pos;
-   pos = m_position;
+    pos = m_position;
     return pos;
   }
 
@@ -155,31 +157,23 @@ private:
   /// @return
   float speed() {
     float speed;
-      speed = m_speed;
+    speed = m_speed;
     return speed;
   }
 
   float acceleration() {
     float acc;
-      acc = m_acceleration;
+    acc = m_acceleration;
     return acc;
   }
 
-  void set_speed(float speed) {
-      m_speed = speed;
-  }
-  void set_target_speed(float speed) {
-      m_target_speed = speed;
-  }
+  void set_speed(float speed) { m_speed = speed; }
+  void set_target_speed(float speed) { m_target_speed = speed; }
 
   // normally only used to alter position for forward error correction
-  void adjust_position(float adjustment) {
-    m_position += adjustment;
-  }
+  void adjust_position(float adjustment) { m_position += adjustment; }
 
-  void set_position(float position) {
-    m_position = position;
-  }
+  void set_position(float position) { m_position = position; }
 
   // update is called from within systick and should be safe from interrupts
   void update() {
@@ -193,11 +187,14 @@ private:
       if (remaining < get_braking_distance()) {
         m_state = PS_BRAKING;
         if (m_final_speed == 0) {
-          // The magic number I normally set to be the same, numerically, as the current
-          // acceleration. It is just a small velicity that ensures that the motion continues
-          // past the finish point in case floating point rounding prevents that happening.
-          // It is a nasty hack I keep meaning to find a more tidy solution for.
-          m_target_speed = m_sign * 1.0f;//5.0f;  // magic number to make sure we reach zero
+          // The magic number I normally set to be the same, numerically, as the
+          // current acceleration. It is just a small velicity that ensures that
+          // the motion continues past the finish point in case floating point
+          // rounding prevents that happening. It is a nasty hack I keep meaning
+          // to find a more tidy solution for.
+          m_target_speed =
+              m_sign *
+              1.0f; // 5.0f;  // magic number to make sure we reach zero
         } else {
           m_target_speed = m_final_speed;
         };
@@ -218,9 +215,10 @@ private:
     }
     // increment the position
     m_position += m_speed * LOOP_INTERVAL;
-    // The number is a hack to ensure floating point rounding errors do not prevent the
-    // loop termination. The units are mm and independent of the encoder resolution.
-    // I figure that being within 1/8 of a mm will be close enough.
+    // The number is a hack to ensure floating point rounding errors do not
+    // prevent the loop termination. The units are mm and independent of the
+    // encoder resolution. I figure that being within 1/8 of a mm will be close
+    // enough.
     if (m_state != PS_FINISHED && remaining < 0.125) {
       m_state = PS_FINISHED;
       m_target_speed = m_final_speed;

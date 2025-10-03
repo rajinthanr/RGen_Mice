@@ -73,7 +73,7 @@ const float ROT_KD = LOOP_FREQUENCY * (8 * ROT_TM - ROT_TD) / (ROT_KM * ROT_TD);
 
 const float STEERING_KP = 0.25f;
 const float STEERING_KD = 0.0f;
-const float STEERING_ADJUST_LIMIT = 10.0f;
+const float STEERING_ADJUST_LIMIT = 20.0f;
 
 int SEARCH_SPEED = 200;
 const int SEARCH_ACCELERATION = 2000;

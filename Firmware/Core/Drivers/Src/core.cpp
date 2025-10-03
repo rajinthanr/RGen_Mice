@@ -166,7 +166,11 @@ int core(void) {
     }
 
     if (is_run) {
-      icm_initialize();
+      static uint8_t is_initialized = 0;
+      if (!is_initialized) {
+        icm_initialize();
+        is_initialized = 1;
+      }
       print("Search started\n");
       mouse.search(maze.goal());
       maze.flood(START);

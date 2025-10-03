@@ -243,6 +243,11 @@ public:
   void stop_at_center() {
     bool has_wall = is_wall(FL);
     set_steering_mode(STEERING_OFF);
+    if (has_wall) {
+      float remaining = ((dis_reading[FL] + dis_reading[FR]) / 2 - HALF_CELL) -
+                        POLE_WIDTH / 2;
+      motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    }
     wall_adjustment();
     // float remaining = (FULL_CELL + HALF_CELL) - motion.position();
     // // finish at very low speed so we can adjust from the wall ahead if
@@ -289,6 +294,7 @@ public:
     set_steering_mode(STEER_NORMAL);
     motion.set_position(SENSING_POSITION - FULL_CELL);
     motion.wait_until_position(HALF_CELL);
+
     // LED4_OFF;
     set_steering_mode(STEERING_OFF);
     motion.wait_until_position(SENSING_POSITION);
