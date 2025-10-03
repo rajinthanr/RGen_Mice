@@ -1114,7 +1114,7 @@ public:
     if (newHeading == BLOCKED) {
       print("Stuck!\n");
       print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
-      return;
+      return 0;
     }
     turn_to_face(newHeading);
     delay_ms(200);

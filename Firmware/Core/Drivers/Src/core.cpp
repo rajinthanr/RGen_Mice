@@ -111,7 +111,7 @@ int core(void) {
       maze.set_goal(Location(0, 0));
       drive_enable();
       is_mouse_enable = 1;
-      uint8_t is_hit_target = mouse.search(maze.goal());
+      is_hit_target = mouse.search(maze.goal());
       is_mouse_enable = 0;
       drive_disable();
       if (is_hit_target)
