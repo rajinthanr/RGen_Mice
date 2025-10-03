@@ -383,7 +383,7 @@ public:
     motion.set_position(HALF_CELL);
     motion.wait_until_position(SENSING_POSITION);
     // turn_smooth(SS90ER);
-    m_heading = right_from(m_heading);
+    m_heading = behind_from(m_heading);
   }
 
   //***************************************************************************//
