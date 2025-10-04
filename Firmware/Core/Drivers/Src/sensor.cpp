@@ -24,6 +24,8 @@ float dis_reading[4];
 uint8_t NO_START = 0;
 uint8_t LEFT_START = 1;
 uint8_t RIGHT_START = 2;
+uint8_t is_collision_detection = 1;
+uint8_t is_collided = 0;
 
 int max_difference[4];
 
@@ -181,6 +183,7 @@ void readGyro(void) { // k=19791(sum for sample in 1 second)    101376287 for 50
 }
 
 void safety_stop(int duration = 100) {
+  is_mouse_enable = 0;
   drive_disable();
   LEDS_OFF;
 
@@ -193,11 +196,18 @@ void safety_stop(int duration = 100) {
   }
 }
 
-void collisionAvoidance(void) {
-  if (abs(get_accY()) > 40) // If acceleration in Y direction exceeds 2 m/s^2
-  {
-    print("Collision detected!");
-    safety_stop(100);
+void collisionDetection(void) {
+  if (!is_collision_detection)
+    return;
+  static float accY = 0;
+  // accY += get_accY() * 0.1 + accY * 0.9;
+  // if (accY < -40) // If acceleration in Y direction exceeds 30 m/s^2]
+  if (abs(mouse.target_angle - angle) > 10) {
+    is_mouse_enable = 0;
+    drive_disable();
+    is_collided = 1;
+    print("Collision detected!\n");
+    LED3_ON;
   }
 }
 

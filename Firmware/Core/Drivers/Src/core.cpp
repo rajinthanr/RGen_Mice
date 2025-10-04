@@ -8,7 +8,6 @@ Profile rotation; // speed profiles for rotary motion
 Switches switches;
 Mouse mouse;
 Maze maze;
-FastRun fastRun;
 
 uint8_t is_run = 0;
 uint8_t is_mouse_enable = 0;
@@ -20,9 +19,11 @@ Location GOAL(5, 2); // default goal location ********************
 Location HOME(0, 0);
 
 void systick(void) {
+  // acc_y = get_accY();
   if (is_mouse_enable) {
     readGyro();
     readSensor();
+    collisionDetection();
     readVolMeter();
     mouse.linear_speed = motion.velocity();
     mouse.angular_speed = motion.omega();
@@ -51,8 +52,10 @@ int core(void) {
   drive_init();
   print("Core initialized\r\n");
 
-  // fastRun.plan(GOAL, EAST, HOME, maze);
-  // fastRun.print_plan();
+  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  // maze.set_goal(GOAL);
+  // mouse.plan(maze.goal());
+  // mouse.print_plan();
 
   if (switches.key_pressed()) {
     LED1_ON;
@@ -136,12 +139,12 @@ int core(void) {
       }
 
       else if (is_decided == 3) {
-        fastRun.plan(HOME, NORTH, GOAL, maze);
-        fastRun.print_plan();
-        if (fastRun.start()) {
-          fastRun.plan(GOAL, fastRun.m_heading, HOME, maze);
-          fastRun.print_plan();
-          fastRun.start();
+        mouse.plan(maze.goal());
+        mouse.print_plan();
+        if (mouse.start()) {
+          mouse.plan(HOME);
+          mouse.print_plan();
+          mouse.start();
         }
         is_mouse_enable = 0;
         drive_disable();
@@ -242,6 +245,10 @@ int core(void) {
       icm_initialize();
       print("ICM initialized.\n");
       is_icm_init = 0;
+    }
+
+    if (is_collided) {
+      safety_stop(50);
     }
 
     delay_ms(1);

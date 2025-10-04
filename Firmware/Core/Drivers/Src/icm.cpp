@@ -198,6 +198,8 @@ void read_values() {
 }
 
 float get_accY() {
+  if (!is_icm_initialized)
+    return 0;
   uint8_t data[2];
   cs(0);
   uint8_t reg_addr = 0x21 | 0x80; // Register address with read bit set
@@ -206,11 +208,11 @@ float get_accY() {
   // Pull CS high to end SPI transaction
   cs(1);
 
-  acc_data_Y0 = data[0];
-  acc_data_Y1 = data[1];
-  acc_data_Y = (acc_data_Y1 << 8) | acc_data_Y0;
+  acc_data_Y1 = data[0];
+  acc_data_Y0 = data[1];
+  acc_data_Y = ((acc_data_Y1 << 8) | acc_data_Y0);
 
-  float val = ((int16_t)acc_data_Y) * 9.80665f / 8192.0f - offset_acc_y;
+  float val = ((int16_t)acc_data_Y) * 9.80665f / 8192.0f;
   return val;
 }
 

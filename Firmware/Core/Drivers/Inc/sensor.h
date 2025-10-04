@@ -13,6 +13,9 @@ extern int reflectionRate;
 extern float cell_1;
 extern float cell_2;
 
+extern uint8_t is_collision_detection;
+extern uint8_t is_collided ;
+
 extern int32_t volMeter;
 extern int32_t voltage;
 extern int32_t LSensor;
@@ -56,14 +59,15 @@ enum {
 float dist(int ir_num);
 bool is_wall(int w);
 void readSensor(void);
+void collisionDetection(void);
 float get_front_dis();
 void readGyro(void);
 void readVolMeter(void);
 void lowBatCheck(void);
 void IR_Configuration(void);
+void safety_stop(int duration);
 uint8_t occluded_left();
 uint8_t occluded_right();
-uint8_t wait_for_user_start();
 void set_steering_mode(uint8_t mode);
 float clamp(float value, float min, float max);
 
