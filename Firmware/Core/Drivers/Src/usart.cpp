@@ -368,7 +368,7 @@ void print(const char *format, ...) {
     if (len > sizeof(buffer))
       len = sizeof(buffer); // Truncate if necessary
     for (int i = 0; i < len; i++) {
-      uint8_t ch = __io_putchar(buffer[i]);
+      __io_putchar(buffer[i]);
     }
   }
 #endif

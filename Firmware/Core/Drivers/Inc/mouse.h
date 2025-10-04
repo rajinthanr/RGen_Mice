@@ -28,6 +28,8 @@ private:
   Location m_location = START;
   bool m_handStart = false;
   float m_angle = 0;
+  uint8_t num_smooths = 0;
+  uint8_t num_straights = 0;
 
 public:
   uint8_t trust_gyro = 0;
@@ -76,29 +78,6 @@ public:
    */
 
   void set_heading(Heading new_heading) { m_heading = new_heading; }
-
-  static void stopAndAdjust() {
-    float remaining = (FULL_CELL + HALF_CELL) - motion.position();
-    set_steering_mode(STEERING_OFF);
-    // Keep moving with the intent of stopping at the cell centre
-    motion.start_move(remaining, motion.velocity(), 0, motion.acceleration());
-    // While waiting, check to see if a front wall becomes visible and break
-    // out early if it does
-    while (not motion.move_finished()) {
-      if (is_wall(FL)) {
-        break;
-      }
-      delay_ms(2);
-    }
-    // If the wait finished early because of a wall ahead then use that
-    // wall to creep up on the cell centre
-    if (is_wall(FL)) {
-      while (is_wall(FL)) {
-        motion.start_move(10, 50, 0, 1000);
-        delay_ms(2);
-      }
-    }
-  }
 
   //***************************************************************************//
 
@@ -158,6 +137,8 @@ public:
     m_heading = left_from(m_heading);
     set_steering_mode(STEER_NORMAL);
     m_angle += 90;
+    num_smooths++;
+    num_straights = 0;
   }
 
   void turn_smooth_right() {
@@ -188,6 +169,8 @@ public:
     m_heading = right_from(m_heading);
     set_steering_mode(STEER_NORMAL);
     m_angle -= 90;
+    num_smooths++;
+    num_straights = 0;
   }
 
   void stop_at_center() {
@@ -202,12 +185,14 @@ public:
   }
 
   void wall_adjustment() {
+    if (maze.is_exit(m_location, m_heading))
+      return;
+    num_smooths = 0;
+
     if (trust_gyro) {
       // motion.spin_turn(-(angle - m_angle), OMEGA_SPIN_TURN, ALPHA_SPIN_TURN);
       return;
     }
-    if (maze.is_exit(m_location, m_heading))
-      return;
     mouse.is_front_adjust = 1;
     mouse.wall_error = wallFront();
     uint32_t start = millis();
@@ -231,6 +216,7 @@ public:
     // LED4_OFF;
     set_steering_mode(STEERING_OFF);
     motion.wait_until_position(SENSING_POSITION);
+    num_straights++;
   }
 
   //***************************************************************************//
@@ -573,7 +559,7 @@ public:
           move_ahead();
           break;
         case RIGHT:
-          if (is_smooth_turn)
+          if (is_smooth_turn && (num_straights > 2 || num_smooths < 2))
             turn_smooth_right();
           else
             turn_right();
@@ -582,7 +568,7 @@ public:
           turn_back();
           break;
         case LEFT:
-          if (is_smooth_turn)
+          if (is_smooth_turn && (num_straights > 2 || num_smooths < 2))
             turn_smooth_left();
           else
             turn_left();
@@ -661,7 +647,7 @@ public:
           move_ahead();
           break;
         case RIGHT:
-          if (is_smooth_turn)
+          if (is_smooth_turn && (num_straights > 2 || num_smooths < 2))
             turn_smooth_right();
           else
             turn_right();
@@ -670,7 +656,7 @@ public:
           turn_back();
           break;
         case LEFT:
-          if (is_smooth_turn)
+          if (is_smooth_turn && (num_straights > 2 || num_smooths < 2))
             turn_smooth_left();
           else
             turn_left();

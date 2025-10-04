@@ -57,7 +57,7 @@ static void cs(int state) {
 void icm_initialize() {
   // Set CS high initially
   cs(1);
-                         //  gyro and accelerometer low noise mode,
+  //  gyro and accelerometer low noise mode,
   uint8_t init = 0x4E;
   uint8_t init_state = 0x0F;
 
@@ -77,7 +77,7 @@ void icm_initialize() {
   HAL_SPI_Transmit(&hspi3, &accel_config_reg, 1, 100);
   HAL_SPI_Transmit(&hspi3, &accel_fs_sel, 1, 100);
   cs(1);
-  HAL_Delay(10);
+  HAL_Delay(30);
 
   // Write GYRO_CONFIG register (address 0x11)
   uint8_t gyro_config_reg = 0x4F;
@@ -85,14 +85,14 @@ void icm_initialize() {
   HAL_SPI_Transmit(&hspi3, &gyro_config_reg, 1, 100);
   HAL_SPI_Transmit(&hspi3, &gyro_fs_sel, 1, 100);
   cs(1);
-  HAL_Delay(10);
+  HAL_Delay(30);
   cs(0);
   HAL_SPI_Transmit(&hspi3, &init, 1, 100);
-  HAL_Delay(10);
+  HAL_Delay(30);
   HAL_SPI_Transmit(&hspi3, &init_state, 1, 100);
   cs(1);
   // HAL_SPI_Transmit(&hspi3, &fifo_conf_data, 1, 100);
-  HAL_Delay(10);
+  HAL_Delay(30);
   // Pull CS high to end SPI transaction
 
   /* Configure GYRO_CONFIG1 for 2nd Order UI Filter and 170Hz Temp DLPF */

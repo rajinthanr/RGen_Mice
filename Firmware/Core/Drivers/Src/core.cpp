@@ -10,18 +10,13 @@ Mouse mouse;
 Maze maze;
 
 uint8_t is_run = 0;
-
-float left_measured;
-float right_measured;
 uint8_t is_mouse_enable = 0;
 uint8_t is_wall_follow = 0;
 uint8_t is_icm_init = 0;
 
-// Retarget print to UART
-
-float theta;
-
-uint32_t duration;
+//****************** User Configurable Parameters ***************** */
+Location GOAL(5, 11); // default goal location ********************
+Location HOME(0, 0);
 
 void systick(void) {
   if (is_mouse_enable) {
@@ -67,31 +62,31 @@ int core(void) {
     NVIC_SystemReset();
   }
 
+  //*****************  Main loop  ***************** */
 
   while (1) {
 
-    if (switches.boot_pressed()) {
+    if (switches.boot_pressed()) { // Start button pressed - initiate search run
+                                   // or fast run
       uint8_t is_decided = 0;
       LED2_ON;
       is_mouse_enable = 1;
       delay_ms(1000);
 
       while (!is_decided) {
-
         if (occluded_left()) {
           LED1_ON;
-          print("Left start selected\n");
-          maze.set_goal(Location(5, 11));
+          print("Left start selected - search run\n");
           is_decided = 1;
 
         } else if (occluded_right()) {
           LED4_ON;
-          print("Right start selected\n");
-          maze.load_from_flash();
-          maze.set_goal(Location(5, 11));
-          is_decided = 1;
+          print("Right start selected - fast run\n");
+          is_decided = 2;
         }
       }
+
+      maze.set_goal(GOAL);
       print("Start in 2 seconds\r\n");
       LEDS_ON;
       delay_ms(500);
@@ -102,26 +97,36 @@ int core(void) {
       LED2_OFF;
       icm_initialize();
       LED1_OFF;
-
       print("Search started\n");
       drive_enable();
-      uint8_t is_hit_target = mouse.search(maze.goal());
-      is_mouse_enable = 0;
-      drive_disable();
-      if (is_hit_target)
-        maze.save_to_flash();
-      maze.set_goal(Location(0, 0));
-      drive_enable();
-      is_mouse_enable = 1;
-      is_hit_target = mouse.search(maze.goal());
-      is_mouse_enable = 0;
-      drive_disable();
-      if (is_hit_target)
-        maze.save_to_flash();
-    } else {
+
+      if (is_decided == 1) {
+        uint8_t is_hit_target = mouse.search(maze.goal());
+        is_mouse_enable = 0;
+        drive_disable();
+        if (is_hit_target)
+          maze.save_to_flash();
+        maze.set_goal(HOME);
+        drive_enable();
+        is_mouse_enable = 1;
+        is_hit_target = mouse.search(maze.goal());
+        is_mouse_enable = 0;
+        drive_disable();
+        if (is_hit_target)
+          maze.save_to_flash();
+      }
+
+      else if (is_decided == 2) {
+        maze.load_from_flash();
+        if (mouse.fast_run(maze.goal()))
+          mouse.fast_run(Location(0, 0));
+        is_mouse_enable = 0;
+        drive_disable();
+      }
     }
 
-    if (switches.key_pressed()) {
+    if (switches.key_pressed()) { // Allows user to configure settings
+
       LED4_ON;
       while (switches.key_pressed())
         ;
@@ -129,18 +134,20 @@ int core(void) {
       delay_ms(10);
       int32_t left_init = getLeftEncCount();
       int32_t right_init = getRightEncCount();
-
       LEDS_OFF;
       LED_On((SEARCH_SPEED / 100) % 4 + 1);
 
       while (!switches.key_pressed()) {
+
         if (getLeftEncCount() - left_init > 50) {
           SEARCH_SPEED += 100;
           left_init = getLeftEncCount();
 
           LEDS_OFF;
           LED_On((SEARCH_SPEED / 100) % 4 + 1);
-        } else if (getLeftEncCount() - left_init < -50) {
+        }
+
+        else if (getLeftEncCount() - left_init < -50) {
           SEARCH_SPEED -= 100;
           left_init = getLeftEncCount();
 
@@ -154,7 +161,9 @@ int core(void) {
 
           LEDS_OFF;
           LED_Blink(2, 100, 2);
-        } else if (getRightEncCount() - right_init < -50) {
+        }
+
+        else if (getRightEncCount() - right_init < -50) {
           mouse.is_smooth_turn = 0;
           right_init = getRightEncCount();
 
@@ -175,14 +184,12 @@ int core(void) {
 
         delay_ms(10);
       }
+
       LEDS_OFF;
       while (switches.key_pressed())
         ;
       delay_ms(20);
-    } else {
     }
-
-    delay_ms(1);
 
     static uint32_t lastTick = 0;
     if (millis() - lastTick >= 500) { // 500ms = 2 times per second
@@ -213,6 +220,8 @@ int core(void) {
       print("ICM initialized.\n");
       is_icm_init = 0;
     }
+
+    delay_ms(1);
   }
   return 0;
 }
