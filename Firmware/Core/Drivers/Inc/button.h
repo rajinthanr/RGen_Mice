@@ -8,6 +8,9 @@ extern "C" {
 
 void button_Configuration(void);
 
+class Switches;
+extern Switches switches;
+
 class Switches {
 public:
   explicit Switches(){};

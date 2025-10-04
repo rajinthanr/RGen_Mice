@@ -57,9 +57,6 @@ static void cs(int state) {
 void icm_initialize() {
   // Set CS high initially
   cs(1);
-  uint8_t configure_reset = 0x01;
-  uint8_t fifo_conf_data = 0x03;
-  uint8_t buffer = 0x0F; //  temperature sensor enabled. RC oscillator is on,
                          //  gyro and accelerometer low noise mode,
   uint8_t init = 0x4E;
   uint8_t init_state = 0x0F;
@@ -104,8 +101,6 @@ void icm_initialize() {
   // GYRO_UI_FILT_ORD = 01 (bits 3:2) for 2nd Order
   // GYRO_DEC2_M2_ORD = 10 (bits 1:0) for 3rd Order (as per datasheet, 2nd order
   // not available for these bits)
-  uint8_t gyro_config1_reg = 0x51;
-  uint8_t gyro_config1_val = (0b001 << 5) | (0b01 << 2) | (0b10); // 0x26
 
   // cs(0);
   // HAL_SPI_Transmit(&hspi3, &gyro_config1_reg, 1, 100);

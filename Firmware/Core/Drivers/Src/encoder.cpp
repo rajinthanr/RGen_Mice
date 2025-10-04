@@ -1,5 +1,6 @@
-#include "stm32f4xx.h"
 #include "encoder.h"
+#include "stm32f4xx.h"
+
 
 // PA0	TIM5_CH1	Encoder_R_CHA
 // PA1	TIM5_CH2	Encoder_R_CHB
@@ -21,85 +22,73 @@ static uint32_t left_enc_last_time = 0;
 static uint32_t right_enc_last_time = 0;
 
 // Call this function periodically to get left wheel speed in mm/s
-float getLeftSpeed(void)
-{
-	int32_t current = getLeftEncCount();
-	uint32_t now = micros();
-	float dt_sec = (now - left_enc_last_time) / 1000000.0f;
-	int32_t ticks = current - left_enc_last;
-	left_enc_last = current;
-	left_enc_last_time = now;
-	float distance_mm = ticks / ENCODER_TICKS_PER_MM;
-	return (dt_sec > 0) ? (distance_mm / dt_sec) : 0.0f;
+float getLeftSpeed(void) {
+  int32_t current = getLeftEncCount();
+  uint32_t now = micros();
+  float dt_sec = (now - left_enc_last_time) / 1000000.0f;
+  int32_t ticks = current - left_enc_last;
+  left_enc_last = current;
+  left_enc_last_time = now;
+  float distance_mm = ticks / ENCODER_TICKS_PER_MM;
+  return (dt_sec > 0) ? (distance_mm / dt_sec) : 0.0f;
 }
 
 // Call this function periodically to get right wheel speed in mm/s
-float getRightSpeed(void)
-{
-	int32_t current = getRightEncCount();
-	uint32_t now = micros();
-	float dt_sec = (now - right_enc_last_time) / 1000000.0f;
-	int32_t ticks = current - right_enc_last;
-	right_enc_last = current;
-	right_enc_last_time = now;
-	float distance_mm = ticks / ENCODER_TICKS_PER_MM;
-	return (dt_sec > 0) ? (distance_mm / dt_sec) : 0.0f;
+float getRightSpeed(void) {
+  int32_t current = getRightEncCount();
+  uint32_t now = micros();
+  float dt_sec = (now - right_enc_last_time) / 1000000.0f;
+  int32_t ticks = current - right_enc_last;
+  right_enc_last = current;
+  right_enc_last_time = now;
+  float distance_mm = ticks / ENCODER_TICKS_PER_MM;
+  return (dt_sec > 0) ? (distance_mm / dt_sec) : 0.0f;
 }
 
-float get_forward_dis(){
-	 return (getLeftEncCount() + getRightEncCount())*1.0 / (2.0f * ENCODER_TICKS_PER_MM);
+float get_forward_dis() {
+  return (getLeftEncCount() + getRightEncCount()) * 1.0 /
+         (2.0f * ENCODER_TICKS_PER_MM);
 }
 
-void Encoder_Configration(void)
-{
-	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
-	HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
+void Encoder_Configration(void) {
+  HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
+  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 }
 
-int32_t getRightEncCount(void)
-{
-	uint16_t count = TIM2->CNT;
+int32_t getRightEncCount(void) {
+  uint16_t count = TIM2->CNT;
 
-	static uint16_t pre_count = 0;
-	static int16_t round = 0;
+  static uint16_t pre_count = 0;
+  static int16_t round = 0;
 
-	if (abs(count - pre_count) > 50000)
-	{
-		if (count > 30000)
-			round--;
-		else
-			round++;
-	}
+  if (abs(count - pre_count) > 50000) {
+    if (count > 30000)
+      round--;
+    else
+      round++;
+  }
 
-	pre_count = count;
-	return -(round * 65536 + count);
+  pre_count = count;
+  return -(round * 65536 + count);
 }
 
-void resetRightEncCount(void)
-{
-	TIM2->CNT = 0;
+void resetRightEncCount(void) { TIM2->CNT = 0; }
+
+int32_t getLeftEncCount(void) {
+  uint16_t count = TIM1->CNT;
+
+  static uint16_t pre_count = 0;
+  static int16_t round = 0;
+
+  if (abs(count - pre_count) > 50000) {
+    if (count > 30000)
+      round--;
+    else
+      round++;
+  }
+
+  pre_count = count;
+  return (round * 65536 + count);
 }
 
-int32_t getLeftEncCount(void)
-{
-	uint16_t count = TIM1->CNT;
-
-	static uint16_t pre_count = 0;
-	static int16_t round = 0;
-
-	if (abs(count - pre_count) > 50000)
-	{
-		if (count > 30000)
-			round--;
-		else
-			round++;
-	}
-
-	pre_count = count;
-	return (round * 65536 + count);
-}
-
-void resetLeftEncCount(void)
-{
-	TIM1->CNT = 0;
-}
+void resetLeftEncCount(void) { TIM1->CNT = 0; }

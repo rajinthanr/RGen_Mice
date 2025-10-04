@@ -1,5 +1,5 @@
-#ifndef SENSOR_FUNCTION_H
-#define SENSOR_FUNCTION_H
+#ifndef SENSOR_H
+#define SENSOR_H
 
 #ifdef __cplusplus
 extern "C" {

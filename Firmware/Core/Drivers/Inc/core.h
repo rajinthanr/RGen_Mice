@@ -18,7 +18,7 @@
 #include "motion.h"
 #include "mouse.h"
 #include "profile.h"
-#include "sensor_Function.h"
+#include "sensor.h"
 #include "usart.h"
 #include "wall_handle.h"
 

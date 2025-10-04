@@ -7,7 +7,7 @@
 #include "main.h"
 #include "math.h"
 #include "mouse.h"
-#include "sensor_Function.h"
+#include "sensor.h"
 #include "stdbool.h"
 
 extern TIM_HandleTypeDef htim3;

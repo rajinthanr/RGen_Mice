@@ -8,7 +8,7 @@
 #include "led.h"
 #include "maze.h"
 #include "motion.h"
-#include "sensor_Function.h"
+#include "sensor.h"
 #include "usart.h"
 #include "wall_handle.h"
 
@@ -171,9 +171,8 @@ public:
     if (!maze.is_exit(m_location, m_heading)) {
       // motion.move(2*(FULL_CELL-SENSING_POSITION)-20, SEARCH_SPEED,
       // SEARCH_SPEED, SEARCH_ACCELERATION);
-      float remaining =
-          ((dis_reading[FL] + dis_reading[FR]) / 2 - SENSING_POSITION) -
-          POLE_WIDTH / 2;
+      // float remaining =((dis_reading[FL] + dis_reading[FR]) / 2 -
+      // SENSING_POSITION) -POLE_WIDTH / 2;
       // mouse.is_front_adjust = 1;
       // motion.move(remaining, SEARCH_SPEED, SEARCH_SPEED,
       // SEARCH_ACCELERATION); mouse.is_front_adjust = 0;
@@ -204,9 +203,9 @@ public:
     if (!maze.is_exit(m_location, m_heading)) {
       // motion.move(2*(FULL_CELL-SENSING_POSITION)-20, SEARCH_SPEED,
       // SEARCH_SPEED, SEARCH_ACCELERATION);
-      float remaining =
-          ((dis_reading[FL] + dis_reading[FR]) / 2 - SENSING_POSITION) -
-          POLE_WIDTH / 2;
+      //      float remaining =
+      //          ((dis_reading[FL] + dis_reading[FR]) / 2 - SENSING_POSITION) -
+      //          POLE_WIDTH / 2;
       // mouse.is_front_adjust = 1;
       // motion.move(remaining, SEARCH_SPEED, SEARCH_SPEED,
       // SEARCH_ACCELERATION); mouse.is_front_adjust = 0;
@@ -288,6 +287,8 @@ public:
     mouse.is_front_adjust = 0;
   }
 
+  //******************************************************************************//
+
   void move_ahead() {
     is_left_wall = !maze.is_exit(m_location, left_from(m_heading));
     is_right_wall = !maze.is_exit(m_location, right_from(m_heading));
@@ -328,12 +329,16 @@ public:
 
   //***************************************************************************//
   void turn_right() {
+    print("Turning right\n");
     set_steering_mode(STEER_NORMAL);
     if (!maze.is_exit(m_location, m_heading)) {
+      print("move ahead %f\n",
+            FULL_CELL + HALF_CELL / 2 - SENSING_POSITION - 20);
       motion.move(FULL_CELL + HALF_CELL / 2 - SENSING_POSITION - 20,
                   SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
       float remaining = ((dis_reading[FL] + dis_reading[FR]) / 2 - HALF_CELL) -
                         POLE_WIDTH / 2;
+      print("Remaining: %f\n", remaining);
       motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     } else {
       motion.move(FULL_CELL * 1.5 - SENSING_POSITION, SEARCH_SPEED, 0,
@@ -341,8 +346,11 @@ public:
     }
     // LED4_OFF;
     set_steering_mode(STEERING_OFF);
+    print("Adjusting wall\n");
     wall_adjustment();
+    print("Turning right\n");
     turn_IP90R();
+    print("Turned right\n");
     motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
                       SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
@@ -384,71 +392,6 @@ public:
     motion.wait_until_position(SENSING_POSITION);
     // turn_smooth(SS90ER);
     m_heading = behind_from(m_heading);
-  }
-
-  //***************************************************************************//
-  /***
-   * A simple wall follower that knows where it is
-   * It will follow the left wall until it reaches the supplied taget
-   * cell.
-   */
-  void follow_to(Location target) {
-    print("Follow TO");
-    m_handStart = true;
-    m_location = START;
-    m_heading = NORTH;
-    maze.initialise();
-    wait_for_user_start();
-    enable();
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF);
-    motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED,
-                SEARCH_ACCELERATION);
-    motion.set_position(HALF_CELL);
-    print("Off we go...");
-    motion.wait_until_position(SENSING_POSITION);
-    // at the start of this loop we are always at the sensing point
-    while (m_location != target) {
-      if (switches.key_pressed()) {
-        break;
-      }
-      print("\n");
-      // reporter.log_action_status('-', ' ', m_location, m_heading);
-      set_steering_mode(STEER_NORMAL);
-      m_location = m_location.neighbour(m_heading);
-      update_map();
-      print(" ");
-      print("|");
-      print(" ");
-      print("|");
-      print(" ");
-      char action = '#';
-      if (m_location != target) {
-        if (!is_wall(L)) {
-          turn_left();
-          action = 'L';
-        } else if (!is_wall(FL)) {
-          move_ahead();
-          action = 'F';
-        } else if (!is_wall(R)) {
-          turn_right();
-          action = 'R';
-        } else {
-          turn_back();
-          action = 'B';
-        }
-      }
-      // reporter.log_action_status(action, ' ', m_location, m_heading);
-    }
-    // we are entering the target cell so come to an orderly
-    // halt in the middle of that cell
-    stop_at_center();
-    print("\n");
-    print("Arrived!  ");
-    delay_ms(250);
-    disable();
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF);
   }
 
   /****************************************************************************/
@@ -637,129 +580,6 @@ public:
     set_steering_mode(STEERING_OFF);
   }
 
-  /****************************************************************************/
-  bool getRandomBool() { return rand() % 2 == 0; }
-
-  /****************************************************************************/
-  // when searching the maze select a random direction for the next cell
-  uint8_t randomHeading() {
-    uint8_t turnDirection;
-    bool leftWall = is_wall(L);
-    bool rightWall = is_wall(R);
-    bool frontWall = is_wall(FL);
-
-    if (leftWall && rightWall && frontWall) {
-      turnDirection = BACK;
-    } else if (leftWall && rightWall) {
-      turnDirection = AHEAD;
-    } else if (rightWall && frontWall) {
-      turnDirection = LEFT;
-    } else if (leftWall && frontWall) {
-      turnDirection = RIGHT;
-    } else if (leftWall) {
-      if (getRandomBool()) {
-        turnDirection = RIGHT;
-      } else {
-        turnDirection = AHEAD;
-      }
-    } else if (rightWall) {
-      if (getRandomBool()) {
-        turnDirection = LEFT;
-      } else {
-        turnDirection = AHEAD;
-      }
-    } else {
-      if (getRandomBool()) {
-        turnDirection = LEFT;
-      } else {
-        turnDirection = RIGHT;
-      }
-    }
-
-    return turnDirection;
-  }
-
-  /****************************************************************************/
-  void wander_to(Location target) {
-    target = Location(16, 16);
-    print("Wandering...");
-    m_handStart = true;
-    m_location = START;
-    m_heading = NORTH;
-    maze.initialise();
-    wait_for_user_start();
-    enable();
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF);
-    motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED,
-                SEARCH_ACCELERATION);
-    motion.set_position(HALF_CELL);
-    print("Off we go...\n");
-    motion.wait_until_position(SENSING_POSITION);
-    // at the start of this loop we are always at the sensing point
-    while (m_location != target) {
-      if (switches.key_pressed()) {
-        break;
-      }
-      print("\n");
-      // reporter.log_action_status('-', ' ', m_location, m_heading);
-      set_steering_mode(STEER_NORMAL);
-      m_location = m_location.neighbour(m_heading);
-      update_map();
-      print(" ");
-      print("|");
-      print(" ");
-      char action = 'W';
-      uint8_t hdg = randomHeading();
-      if (hdg == LEFT) {
-        turn_left();
-        action = 'L';
-      } else if (hdg == AHEAD) {
-        move_ahead();
-        action = 'F';
-      } else if (hdg == RIGHT) {
-        turn_right();
-        action = 'R';
-      } else {
-        turn_back();
-        action = 'B';
-      }
-      // reporter.log_action_status(action, ' ', m_location, m_heading);
-    }
-    // we are entering the target cell so come to an orderly
-    // halt in the middle of that cell
-    stop_at_center();
-    print("\n");
-    print("Arrived!  ");
-    delay_ms(250);
-    disable();
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF);
-  }
-
-  /****************************************************************************/
-  /***
-   * run_to should take the mouse to the target cell by whatever
-   * fast means it has. There is no mapping done, just the motion.
-   *
-   * It should be assumed that the maze is flooded using the CLOSED mask
-   * so that the route is safe.
-   *
-   * run_to must calculate the path itself. This may be either by
-   * pre-calculation to generate a series of operations or the path
-   * may be calculated on-the-fly using the cost map from the flood.
-   *
-   * On entry, the mouse will know its location and heading so the
-   * first operation will be to turn to face the right way for
-   * the initial move. All paths will start with a straight.
-   *
-   * If the function is called with handstart set true, you can
-   * assume that the mouse is already backed up to the wall behind.
-   *
-   * On exit, the mouse will be centered in the target cell still
-   * facing in the direction it entered that cell. This will
-   * always be one of the four cardinal directions NESW
-   */
   void run_to(Location target) {
     (void)target;
     //// Not implemented
@@ -943,7 +763,7 @@ public:
    */
 
   void conf_sensor_spin_calibrate() {
-    int side = wait_for_user_start(); // cover front sensor w
+    // int side = wait_for_user_start(); // cover front sensor w
 
     enable();
     motion.reset_drive_system();
@@ -1108,7 +928,6 @@ public:
   //***************************************************************************//
 
   uint8_t search(Location target) {
-    uint8_t is_hit_target = 0;
     maze.flood(target);
     Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
     if (newHeading == BLOCKED) {

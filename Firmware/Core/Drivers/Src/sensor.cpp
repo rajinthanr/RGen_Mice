@@ -1,5 +1,5 @@
 // #include "global.h"
-#include "sensor_Function.h"
+#include "sensor.h"
 #include "adc.h"
 #include "core.h"
 #include "delay.h"
@@ -7,7 +7,6 @@
 #include "icm.h"
 #include "led.h"
 #include "main.h"
-#include "pwm.h"
 
 float cell_1 = 0;
 float cell_2 = 0;
@@ -51,7 +50,7 @@ float dist(int ir_num) {
 
 bool is_wall(int w) {
   if (w == FL || w == FR)
-    return (dis_reading[FL] + dis_reading[FR]) <= 550;
+    return (get_front_dis() <= 225);
   return dis_reading[w] <= 150;
 }
 
@@ -70,7 +69,7 @@ void readSensor(void) {
 
   // Take 'average' readings and compute the average for each sensor
   int avg_count = 1; // You can change this value or pass as a parameter
-  uint16_t exposure_time = 80; // in microseconds
+  uint16_t exposure_time = 60; // in microseconds
 
   int l_sum = 0, r_sum = 0, fl_sum = 0, fr_sum = 0;
   for (int i = 0; i < avg_count; ++i) {
@@ -102,8 +101,9 @@ void readSensor(void) {
   FR_EM_OFF;
 
   // Then the side wall sensors
-  if (!mouse.is_front_adjust) { // If front wall adjustment needed, skip side
-                                // sensors to save time
+  // if (!mouse.is_front_adjust)
+  { // If front wall adjustment needed, skip side
+    // sensors to save time
     L_EM_ON;
     delay_us(exposure_time);
     int l_em_sum = 0;

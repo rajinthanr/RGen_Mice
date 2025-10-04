@@ -336,14 +336,14 @@ void print(const char *format, ...) {
   char buffer[200]; // Adjust size as needed
   va_list args;
   va_start(args, format);
-  int len = vsnprintf(buffer, sizeof(buffer), format, args);
+  uint16_t len = vsnprintf(buffer, sizeof(buffer), format, args);
   va_end(args);
 
   if (len > 0) {
     if (len > sizeof(buffer))
       len = sizeof(buffer); // Truncate if necessary
     for (int i = 0; i < len; i++) {
-      uint8_t ss = __io_putchar(buffer[i]);
+      __io_putchar(buffer[i]);
     }
   }
 }
