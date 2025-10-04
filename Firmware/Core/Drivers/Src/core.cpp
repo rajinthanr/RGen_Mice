@@ -35,6 +35,7 @@ void systick(void) {
 }
 
 int core(void) {
+  Systick_Configuration();
   LED2_ON;
   print("initialing..\r\n");
   delay_ms(100);
@@ -65,7 +66,6 @@ int core(void) {
   }
 
   is_sensor_active = true;
-  Systick_Configuration();
 
   while (1) {
 
