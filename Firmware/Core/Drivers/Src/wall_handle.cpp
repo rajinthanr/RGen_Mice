@@ -23,8 +23,6 @@ PID pid_distance = {30.0f, 0.3f, 0.1f, 0, 0};
 void Wall_Configuration(void) { get_cal_initial_wall(); }
 
 void cal_initial_wall() {
-  uint8_t pre_state = is_sensor_active;
-  enable();
   LED4_ON;
   delay_ms(1000);
   LED4_OFF;
@@ -50,11 +48,9 @@ void cal_initial_wall() {
     putInt(FLASH_CAL_INIT_WALL + a, initial_wall[a]);
 
   commit_flash();
-  delay_ms(1000);
+  delay_ms(100);
   LED4_OFF;
   LED3_OFF;
-  if (!pre_state)
-    disable();
   print("Calibration done\n");
 }
 

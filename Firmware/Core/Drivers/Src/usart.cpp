@@ -103,16 +103,6 @@ void debug() {
       print("\n");
     }
 
-    else if (strcmp(cmdBuffer, "enable_ir") == 0) {
-      static uint8_t is_sensor_active = false;
-      is_sensor_active = !is_sensor_active;
-      if (is_sensor_active)
-        enable();
-      else
-        disable();
-      print("IR Enable: %d\n", is_sensor_active);
-    }
-
     else if (strcmp(cmdBuffer, "run") == 0) {
       is_run = !is_run;
       print("Run: %d\n", is_run);
@@ -367,6 +357,7 @@ void log_action_status(char action, char note, Location location,
 // ************************************************************************************************************************************
 
 void print(const char *format, ...) {
+#ifdef DEBUG
   char buffer[200]; // Adjust size as needed
   va_list args;
   va_start(args, format);
@@ -380,6 +371,7 @@ void print(const char *format, ...) {
       uint8_t ch = __io_putchar(buffer[i]);
     }
   }
+#endif
 }
 
 void UART_Configurations() {

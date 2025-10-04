@@ -20,7 +20,6 @@ float aSpeed = 0; // angular velocity
 float angle = 0;
 int reading[4];
 float dis_reading[4];
-uint8_t is_sensor_active = false;
 
 uint8_t NO_START = 0;
 uint8_t LEFT_START = 1;
@@ -65,8 +64,6 @@ void set_steering_mode(uint8_t mode) {
 
 /*read IR sensors*/
 void readSensor(void) {
-  // if(is_sensor_active == false) return;
-
   // Take 'average' readings and compute the average for each sensor
   int avg_count = 1; // You can change this value or pass as a parameter
   uint16_t exposure_time = 80; // in microseconds
@@ -252,10 +249,6 @@ void IR_Configuration(void) {
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(TR_FR_GPIO_Port, &GPIO_InitStruct);
 }
-
-void enable() { is_sensor_active = true; }
-
-void disable() { is_sensor_active = false; }
 
 uint8_t occluded_left() {
   return dis_reading[FL] < 100 && dis_reading[FR] > 100;

@@ -29,7 +29,6 @@ extern uint8_t RIGHT_START;
 
 extern int reading[4];
 extern float dis_reading[4];
-extern uint8_t is_sensor_active;
 
 enum {
   STEER_NORMAL,
@@ -62,8 +61,6 @@ void readGyro(void);
 void readVolMeter(void);
 void lowBatCheck(void);
 void IR_Configuration(void);
-void enable();
-void disable();
 uint8_t occluded_left();
 uint8_t occluded_right();
 uint8_t wait_for_user_start();

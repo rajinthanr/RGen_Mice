@@ -1,3 +1,5 @@
+#define DEBUG 1
+
 #include "core.h"
 
 Motion motion;    // high level motion operations
@@ -7,7 +9,6 @@ Switches switches;
 Mouse mouse;
 Maze maze;
 
-extern UART_HandleTypeDef huart1; // Change to your UART instance
 uint8_t is_run = 0;
 
 float left_measured;
@@ -35,9 +36,10 @@ void systick(void) {
 }
 
 int core(void) {
-  Systick_Configuration();
   LED2_ON;
   print("initialing..\r\n");
+
+  Systick_Configuration();
   delay_ms(100);
 
   UART_Configurations();
@@ -61,11 +63,10 @@ int core(void) {
     delay_ms(1000);
     LEDS_OFF;
     cal_initial_wall();
-    delay_ms(1000);
+    delay_ms(100);
     NVIC_SystemReset();
   }
 
-  is_sensor_active = true;
 
   while (1) {
 
@@ -129,21 +130,42 @@ int core(void) {
       int32_t left_init = getLeftEncCount();
       int32_t right_init = getRightEncCount();
 
+      LEDS_OFF;
+      LED_On((SEARCH_SPEED / 100) % 4 + 1);
+
       while (!switches.key_pressed()) {
         if (getLeftEncCount() - left_init > 50) {
           SEARCH_SPEED += 100;
           left_init = getLeftEncCount();
+
+          LEDS_OFF;
+          LED_On((SEARCH_SPEED / 100) % 4 + 1);
         } else if (getLeftEncCount() - left_init < -50) {
           SEARCH_SPEED -= 100;
           left_init = getLeftEncCount();
+
+          LEDS_OFF;
+          LED_On((SEARCH_SPEED / 100) % 4 + 1);
         }
 
         if (getRightEncCount() - right_init > 60) {
           mouse.is_smooth_turn = 1;
           right_init = getRightEncCount();
+
+          LEDS_OFF;
+          LED_Blink(2, 100, 2);
         } else if (getRightEncCount() - right_init < -50) {
           mouse.is_smooth_turn = 0;
           right_init = getRightEncCount();
+
+          LEDS_OFF;
+          LED_Blink(3, 100, 2);
+        }
+
+        if (switches.boot_pressed()) {
+          mouse.trust_gyro = 1;
+          LED1_ON;
+          delay_ms(200);
         }
 
         if (SEARCH_SPEED < 100)
@@ -151,8 +173,6 @@ int core(void) {
         if (SEARCH_SPEED > 1000)
           SEARCH_SPEED = 1000;
 
-        LEDS_OFF;
-        LED_On((SEARCH_SPEED / 100) % 4 + 1);
         delay_ms(10);
       }
       LEDS_OFF;
