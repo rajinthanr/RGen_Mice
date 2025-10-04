@@ -243,8 +243,7 @@ public:
     bool has_wall = is_wall(FL);
     set_steering_mode(STEERING_OFF);
     if (has_wall) {
-      float remaining = ((dis_reading[FL] + dis_reading[FR]) / 2 - HALF_CELL) -
-                        POLE_WIDTH / 2;
+      float remaining = (get_front_dis() - HALF_CELL) - POLE_WIDTH / 2;
       motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     }
     wall_adjustment();
@@ -956,6 +955,9 @@ public:
       set_steering_mode(STEER_NORMAL);
       m_location =
           m_location.neighbour(m_heading); // the cell we are about to enter
+
+      if (m_location == target)
+        break;
       update_map();
       maze.flood(target);
       unsigned char newHeading =
