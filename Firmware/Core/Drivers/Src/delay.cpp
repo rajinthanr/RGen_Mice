@@ -47,7 +47,7 @@ void delay_us(uint32_t nTime)
 }  
 
 void elapseMicros(uint32_t targetTime, uint32_t oldt)
-{
+ {
 	while((micros()-oldt)<targetTime);
 }
 

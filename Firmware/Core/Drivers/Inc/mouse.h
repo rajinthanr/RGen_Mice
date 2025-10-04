@@ -533,8 +533,6 @@ public:
       m_location =
           m_location.neighbour(m_heading); // the cell we are about to enter
 
-      if (m_location == target)
-        break;
       update_map();
       maze.flood(target);
       unsigned char newHeading =
@@ -548,6 +546,7 @@ public:
         break;
       }
       unsigned char hdgChange = (newHeading - m_heading) & 0x3;
+
       if (m_location != target) {
         print("%d \n", hdgChange);
         // LED4_ON;
@@ -669,7 +668,6 @@ public:
     // of that cell
     print("Stopping in center\n");
     stop_at_center();
-    ;
     print("\n");
     print("Arrived!  \n");
     delay_ms(250);

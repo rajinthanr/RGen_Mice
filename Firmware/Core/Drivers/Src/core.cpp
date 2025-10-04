@@ -8,6 +8,7 @@ Profile rotation; // speed profiles for rotary motion
 Switches switches;
 Mouse mouse;
 Maze maze;
+FastRun fastRun;
 
 uint8_t is_run = 0;
 uint8_t is_mouse_enable = 0;
@@ -15,7 +16,7 @@ uint8_t is_wall_follow = 0;
 uint8_t is_icm_init = 0;
 
 //****************** User Configurable Parameters ***************** */
-Location GOAL(5, 11); // default goal location ********************
+Location GOAL(5, 2); // default goal location ********************
 Location HOME(0, 0);
 
 void systick(void) {
@@ -50,6 +51,9 @@ int core(void) {
   drive_init();
   print("Core initialized\r\n");
 
+  // fastRun.plan(GOAL, EAST, HOME, maze);
+  // fastRun.print_plan();
+
   if (switches.key_pressed()) {
     LED1_ON;
     print("Boot button pressed, calibration mode\r\n");
@@ -83,6 +87,13 @@ int core(void) {
           LED4_ON;
           print("Right start selected - fast run\n");
           is_decided = 2;
+        } else if (switches.key_pressed()) {
+          LED_Blink(2, 100, 3);
+          print("Optimized run selected\n");
+          while (switches.key_pressed())
+            ;
+          delay_ms(20);
+          is_decided = 3;
         }
       }
 
@@ -120,6 +131,18 @@ int core(void) {
         maze.load_from_flash();
         if (mouse.fast_run(maze.goal()))
           mouse.fast_run(Location(0, 0));
+        is_mouse_enable = 0;
+        drive_disable();
+      }
+
+      else if (is_decided == 3) {
+        fastRun.plan(HOME, NORTH, GOAL, maze);
+        fastRun.print_plan();
+        if (fastRun.start()) {
+          fastRun.plan(GOAL, fastRun.m_heading, HOME, maze);
+          fastRun.print_plan();
+          fastRun.start();
+        }
         is_mouse_enable = 0;
         drive_disable();
       }
