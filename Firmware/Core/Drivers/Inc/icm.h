@@ -1,29 +1,21 @@
-/*
- * icm.h
- *
- *  Created on: Dec 22, 2020
- *      Author: Mert Kilic
- */
-
 #ifndef INC_ICM_H_
 #define INC_ICM_H_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 #include "stdint.h"
 
-    extern float acc_data_X;
-    extern float acc_data_Y;
-    extern float acc_data_Z;
-    extern float gyro_data_X;
-    extern float gyro_data_Y;
-    extern float gyro_data_Z;
+extern float acc_data_X;
+extern float acc_data_Y;
+extern float acc_data_Z;
+extern float gyro_data_X;
+extern float gyro_data_Y;
+extern float gyro_data_Z;
 
-    extern float gyro_x_dps;
-    extern float gyro_y_dps;
-    extern float gyro_z_dps;
+extern float gyro_x_dps;
+extern float gyro_y_dps;
+extern float gyro_z_dps;
 
 #define device_address 0x68 << 1
 #define power_mgmt 0x4E
@@ -64,11 +56,10 @@ extern "C"
 #define FIFO_CONFIGURATION 0x5F
 #define FIFO_DATA_REG 0x30
 
-    void configure_device();
-    void icm_initialize();
-    void read_values();
-    float get_gyroZ();
-    float get_accY();
+void icm_initialize();
+void read_values();
+float get_gyroZ();
+float get_accY();
 
 #ifdef __cplusplus
 }
