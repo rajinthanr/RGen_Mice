@@ -199,7 +199,6 @@ void safety_stop(int duration = 100) {
 void collisionDetection(void) {
   if (!is_collision_detection)
     return;
-  static float accY = 0;
   // accY += get_accY() * 0.1 + accY * 0.9;
   // if (accY < -40) // If acceleration in Y direction exceeds 30 m/s^2]
   if (abs(mouse.target_angle - angle) > 10) {

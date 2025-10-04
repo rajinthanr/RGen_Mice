@@ -804,19 +804,26 @@ public:
           m_location = m_location.neighbour(m_heading);
           log_action_status('-', ' ', m_location, m_heading);
           print("\n");
+          num_straights++;
         }
       } break;
       case RIGHT:
         m_location = m_location.neighbour(m_heading);
         log_action_status('-', ' ', m_location, m_heading);
         print("\n");
-        turn_right();
+        if (is_smooth_turn && (num_straights > 2 || num_smooths < 2))
+          turn_smooth_right();
+        else
+          turn_right();
         break;
       case LEFT:
         m_location = m_location.neighbour(m_heading);
         log_action_status('-', ' ', m_location, m_heading);
         print("\n");
-        turn_left();
+        if (is_smooth_turn && (num_straights > 2 || num_smooths < 2))
+          turn_smooth_left();
+        else
+          turn_left();
         break;
       case BACK:
         m_location = m_location.neighbour(m_heading);
