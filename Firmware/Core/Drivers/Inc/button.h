@@ -8,9 +8,6 @@ extern "C" {
 
 void button_Configuration(void);
 
-class Switches;
-// so that we can declare the instance
-extern Switches switches;
 class Switches {
 public:
   explicit Switches(){};

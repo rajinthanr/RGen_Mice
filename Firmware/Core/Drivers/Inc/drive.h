@@ -14,12 +14,9 @@ extern uint8_t is_right_wall;
 // Legacy prototypes (not currently implemented in drive.cpp) -- consider
 // removing or implementing
 void drive_init(void); // TODO: implement or remove
-void drive_set_speed(int left_speed, int right_speed); // TODO: map to drive_dif
-void drive_stop(void); // TODO: implement stop logic
 
 // Current drive interface implemented in drive.cpp
-void drive(float speed,
-           float angular_speed); // Linear (m/s) and angular (rad/s)
+void drive(float left_pwm, float right_pwm);
 void drive_enable();
 void reset_pwm();
 void drive_init();

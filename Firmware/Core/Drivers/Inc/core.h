@@ -37,8 +37,6 @@ extern uint8_t is_wall_follow;
 extern uint8_t is_icm_init;
 
 void systick(void);
-void button1_interrupt(void);
-void button2_interrupt(void);
 int core(void);
 
 #ifdef __cplusplus
