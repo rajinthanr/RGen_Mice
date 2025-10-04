@@ -84,6 +84,9 @@ public:
 
   void set_heading(Heading new_heading) { m_heading = new_heading; }
 
+  Location get_location() { return m_location; }
+  Heading get_heading() { return m_heading; }
+
   //***************************************************************************//
 
   void turn_IP180() {
@@ -182,8 +185,13 @@ public:
     bool has_wall = is_wall(FL);
     set_steering_mode(STEERING_OFF);
     if (has_wall) {
-      float remaining = (get_front_dis() - HALF_CELL) - POLE_WIDTH / 2;
-      motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+      float remaining = (get_front_dis() - HALF_CELL);
+      print("Stopping at center, remaining: %.2f\n", remaining);
+      motion.move(remaining / 2, SEARCH_SPEED / 2, SEARCH_SPEED / 2,
+                  SEARCH_ACCELERATION);
+      remaining = (get_front_dis() - HALF_CELL);
+      print("Stopping at center, remaining: %.2f\n", remaining);
+      motion.move(remaining, SEARCH_SPEED / 2, 0, SEARCH_ACCELERATION);
     }
     wall_adjustment();
     motion.stop();
@@ -221,7 +229,8 @@ public:
     // LED4_OFF;
     set_steering_mode(STEERING_OFF);
     motion.wait_until_position(SENSING_POSITION);
-    num_straights++;
+    if (is_right_wall && is_left_wall)
+      num_straights++;
   }
 
   //***************************************************************************//
@@ -234,6 +243,10 @@ public:
                         POLE_WIDTH / 2;
       motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     } else {
+      if (is_smooth_turn) {
+        turn_smooth_left();
+        return;
+      }
       motion.move(FULL_CELL * 1.5 - SENSING_POSITION, SEARCH_SPEED, 0,
                   SEARCH_ACCELERATION);
     }
@@ -260,6 +273,10 @@ public:
                         POLE_WIDTH / 2;
       motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     } else {
+      if (is_smooth_turn) {
+        turn_smooth_right();
+        return;
+      }
       motion.move(FULL_CELL * 1.5 - SENSING_POSITION, SEARCH_SPEED, 0,
                   SEARCH_ACCELERATION);
     }
@@ -301,121 +318,8 @@ public:
     m_heading = behind_from(m_heading);
   }
 
-  void run(int mm) {
-    print("Follow TO");
-    m_handStart = true;
-    m_location = START;
-    m_heading = NORTH;
-    maze.initialise();
-    motion.reset_drive_system();
-    set_steering_mode(STEER_NORMAL);
-    motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, SEARCH_SPEED,
-                SEARCH_ACCELERATION);
-    motion.set_position(HALF_CELL);
-    motion.move(mm, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
-    print("\n");
-    print("Arrived!  ");
-    delay_ms(250);
-
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF);
-  }
-
-  void search_to(Location target) {
-    maze.flood(target);
-    delay_ms(200);
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF); // never steer from zero speed
-    if (not m_handStart) {
-      // back up to the wall behind
-      // TODO: what if there is not a wall?
-      // perhaps the caller should decide so this ALWAYS starts at the cell
-      // centre?
-      set_steering_mode(GYRO_OFF);
-      motion.move(-BACK_WALL_TO_CENTER, SEARCH_SPEED / 4, 0,
-                  SEARCH_ACCELERATION / 2);
-      set_steering_mode(STEERING_OFF);
-    }
-    motion.move(BACK_WALL_TO_CENTER, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
-    LED1_TOGGLE;
-    delay_ms(1000);
-    LED1_TOGGLE;
-    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
-                      SEARCH_ACCELERATION);
-    motion.set_position(HALF_CELL);
-    print("Off we go...");
-    print("[");
-    print("%d", target.x);
-    print(",");
-    print("%d", target.y);
-    print("]");
-    print("\n");
-
-    motion.wait_until_position(SENSING_POSITION);
-    // Each iteration of this loop starts at the sensing point
-    while (m_location != target) {
-      if (switches.key_pressed()) { // allow user to abort gracefully
-        break;
-      }
-      // print("e\n");
-      log_action_status('-', ' ', m_location, m_heading);
-      set_steering_mode(STEER_NORMAL);
-      m_location =
-          m_location.neighbour(m_heading); // the cell we are about to enter
-      update_map();
-      maze.flood(target);
-      unsigned char newHeading =
-          maze.heading_to_smallest(m_location, m_heading);
-      if (newHeading == BLOCKED) {
-        // we are stuck - no way out
-        print("Stuck!\n");
-        print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
-        motion.move(FULL_CELL * 1.5 - SENSING_POSITION, SEARCH_SPEED, 0,
-                    SEARCH_ACCELERATION);
-        break;
-      }
-      unsigned char hdgChange = (newHeading - m_heading) & 0x3;
-      if (m_location != target) {
-        print("%d \n", hdgChange);
-        LED4_ON;
-        delay_us(50);
-        LED4_OFF;
-        switch (hdgChange) {
-        // each of the following actions will finish with the
-        // robot moving and at the sensing point ready for the
-        // next loop iteration
-        case AHEAD:
-          move_ahead();
-          break;
-        case RIGHT:
-          turn_right();
-          break;
-        case BACK:
-          turn_back();
-          break;
-        case LEFT:
-          turn_left();
-          break;
-        }
-      }
-    }
-    // we are entering the target cell so come to an orderly
-    // halt in the middle of that cell
-    stop_at_center();
-    ;
-    print("\n");
-    print("Arrived!  ");
-    delay_ms(250);
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF);
-  }
-
-  void run_to(Location target) {
-    (void)target;
-    //// Not implemented
-  }
-
   /****************************************************************************/
+
   void turn_to_face(Heading newHeading) {
     unsigned char hdgChange =
         (newHeading + HEADING_COUNT - m_heading) % HEADING_COUNT;
@@ -479,59 +383,16 @@ public:
     }
   }
 
-  int search_maze() {
-    // wait_for_user_start();
-    print("Search TO\n");
-    m_handStart = true;
-    m_location = START;
-    m_heading = NORTH;
-    search_to(maze.goal());
-    maze.flood(START);
-
-    Heading best_direction = maze.heading_to_smallest(m_location, m_heading);
-    turn_to_face(best_direction);
-    m_handStart = false;
-    search_to(START);
-    turn_to_face(NORTH);
-    motion.stop();
-    motion.disable_drive();
-    return 0;
-  }
-
   //***************************************************************************//
 
   uint8_t search(Location target) {
     maze.flood(target);
-    Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
-    if (newHeading == BLOCKED) {
-      print("Stuck!\n");
-      print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
+    if (!initiate_run()) {
       return 0;
     }
-    turn_to_face(newHeading);
-    delay_ms(200);
 
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF); // never steer from zero speed
-
-    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
-                      SEARCH_ACCELERATION);
-    motion.set_position(HALF_CELL);
-    print("Off we go...");
-    print("[");
-    print("%d", target.x);
-    print(",");
-    print("%d", target.y);
-    print("]");
-    print("\n");
-
-    motion.wait_until_position(SENSING_POSITION);
     // Each iteration of this loop starts at the sensing point
     while (m_location != target) {
-      if (switches.key_pressed()) { // allow user to abort gracefully
-        break;
-      }
-      // print("e\n");
       log_action_status('-', ' ', m_location, m_heading);
       set_steering_mode(STEER_NORMAL);
       m_location =
@@ -595,29 +456,9 @@ public:
 
   uint8_t fast_run(Location target) {
     maze.flood(target);
-    Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
-    if (newHeading == BLOCKED) {
-      print("Stuck!\n");
-      print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
+    if (!initiate_run()) {
       return 0;
     }
-    turn_to_face(newHeading);
-    delay_ms(200);
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF); // never steer from zero speed
-
-    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
-                      SEARCH_ACCELERATION);
-    motion.set_position(HALF_CELL);
-    print("Off we go...");
-    print("[");
-    print("%d", target.x);
-    print(",");
-    print("%d", target.y);
-    print("]");
-    print("\n");
-
-    motion.wait_until_position(SENSING_POSITION);
 
     // Each iteration of this loop starts at the sensing point
     while (m_location != target) {
@@ -766,25 +607,14 @@ public:
   // Execute fast run based on mpath[]
   //------------------------------------------------------//
   uint8_t start() {
-    Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
-    if (newHeading == BLOCKED) {
-      print("Stuck!\n");
+    if (!initiate_run()) {
       return 0;
     }
 
-    turn_to_face(newHeading);
-    delay_ms(200);
-    motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF); // never steer from zero speed
-
-    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
-                      SEARCH_ACCELERATION);
-    motion.set_position(HALF_CELL);
-
-    print("Starting optimized run...\n");
-    motion.wait_until_position(SENSING_POSITION);
-
     for (uint16_t i = 0; i < num_moves; i++) {
+      is_left_wall = !maze.is_exit(m_location, left_from(m_heading));
+      is_right_wall = !maze.is_exit(m_location, right_from(m_heading));
+
       switch (mpath[i].direction) {
       case AHEAD: {
         if (i == 0)
@@ -793,20 +623,21 @@ public:
         float u = SEARCH_SPEED;
         float v = u * u + 2 * SEARCH_ACCELERATION * s;
         v = sqrt(v);
-        v = clamp(v, SEARCH_SPEED, 800);
+        v = clamp(v, SEARCH_SPEED, 2.5 * SEARCH_SPEED);
         motion.start_move(s * 2, v, u, SEARCH_ACCELERATION);
         motion.set_position(SENSING_POSITION);
         for (uint8_t j = 1; j <= mpath[i].cell_count; j++) {
+          m_location = m_location.neighbour(m_heading);
+          log_action_status('-', ' ', m_location, m_heading);
+          print("\n");
           motion.wait_until_position(j * FULL_CELL + HALF_CELL);
           set_steering_mode(STEERING_OFF);
           motion.wait_until_position(j * FULL_CELL + SENSING_POSITION);
           set_steering_mode(STEER_NORMAL);
-          m_location = m_location.neighbour(m_heading);
-          log_action_status('-', ' ', m_location, m_heading);
-          print("\n");
           num_straights++;
         }
       } break;
+
       case RIGHT:
         m_location = m_location.neighbour(m_heading);
         log_action_status('-', ' ', m_location, m_heading);
@@ -816,6 +647,7 @@ public:
         else
           turn_right();
         break;
+
       case LEFT:
         m_location = m_location.neighbour(m_heading);
         log_action_status('-', ' ', m_location, m_heading);
@@ -825,6 +657,7 @@ public:
         else
           turn_left();
         break;
+
       case BACK:
         m_location = m_location.neighbour(m_heading);
         log_action_status('-', ' ', m_location, m_heading);
@@ -835,19 +668,44 @@ public:
         print("?");
       }
     }
+    set_steering_mode(STEERING_OFF);
 
     m_location = m_location.neighbour(m_heading);
     log_action_status('-', ' ', m_location, m_heading);
+    stop_at_center();
     print("\n");
 
     print("Stopping in center\n");
-    stop_at_center();
     print("\n");
     print("Arrived!  \n");
     delay_ms(250);
     motion.reset_drive_system();
-    set_steering_mode(STEERING_OFF);
     return 1;
+  }
+
+  uint8_t initiate_run() {
+    Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
+    if (newHeading == BLOCKED) {
+      print("Stuck!\n");
+      return 0;
+    }
+
+    turn_to_face(newHeading);
+    // motion.reset_drive_system();
+    set_steering_mode(STEERING_OFF); // never steer from zero speed
+
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
+                      SEARCH_ACCELERATION);
+    motion.set_position(HALF_CELL);
+
+    print("Starting run...\n");
+    motion.wait_until_position(SENSING_POSITION);
+    return 1;
+  }
+
+  void home_run() {
+    set_steering_mode(STEERING_OFF);
+    motion.move(HALF_CELL - 21, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
   }
 };
 

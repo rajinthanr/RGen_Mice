@@ -15,7 +15,7 @@ uint8_t is_wall_follow = 0;
 uint8_t is_icm_init = 0;
 
 //****************** User Configurable Parameters ***************** */
-Location GOAL(5, 2); // default goal location ********************
+Location GOAL(7, 7); // default goal location ********************
 Location HOME(0, 0);
 
 void systick(void) {
@@ -115,6 +115,7 @@ int core(void) {
       drive_enable();
 
       if (is_decided == 1) {
+        mouse.home_run();
         uint8_t is_hit_target = mouse.search(maze.goal());
         is_mouse_enable = 0;
         drive_disable();
@@ -132,6 +133,7 @@ int core(void) {
 
       else if (is_decided == 2) {
         maze.load_from_flash();
+        mouse.home_run();
         if (mouse.fast_run(maze.goal()))
           mouse.fast_run(Location(0, 0));
         is_mouse_enable = 0;
@@ -141,6 +143,7 @@ int core(void) {
       else if (is_decided == 3) {
         mouse.plan(maze.goal());
         mouse.print_plan();
+        mouse.home_run();
         if (mouse.start()) {
           mouse.plan(HOME);
           mouse.print_plan();

@@ -70,6 +70,10 @@ float angle_controller() {
 
   mouse.target_angle += mouse.angular_speed * LOOP_INTERVAL;
   if (mouse.steering_mode != STEERING_OFF) {
+    is_left_wall =
+        !maze.is_exit(mouse.get_location(), left_from(mouse.get_heading()));
+    is_right_wall =
+        !maze.is_exit(mouse.get_location(), right_from(mouse.get_heading()));
     wallFollow(is_left_wall, is_right_wall);
     mouse.target_angle += mouse.steering_adjustment * LOOP_INTERVAL;
   }

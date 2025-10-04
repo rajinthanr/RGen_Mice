@@ -126,11 +126,15 @@ void wallFollow(bool include_left, bool include_right) {
   pre_wall_state = wall_state;
 
   // Use error as input to wall theta PID using a new PID object
-  static PID wall_theta_pid = {5.0f, 0.08f, 0.01f, 0, 0};
+  static PID wall_theta_pid = {5.0f, 0.05f, 0.05f, 0, 0};
 
+  static float dif = 0;
   error = -error;
 
-  wall_theta_pid.integral += error;
+  if (abs(dif) > STEERING_ADJUST_LIMIT && error * dif > 0) {
+  } else {
+    wall_theta_pid.integral += error;
+  }
   float derivative = error - wall_theta_pid.previous_error;
   wall_theta_pid.previous_error = error;
 
@@ -142,11 +146,11 @@ void wallFollow(bool include_left, bool include_right) {
 
   wall_theta_pid.integral = clamp(wall_theta_pid.integral, -50, 50);
 
-  float dif = wall_theta_pid.kp * error +
-              wall_theta_pid.ki * wall_theta_pid.integral +
-              wall_theta_pid.kd * derivative;
+  dif = wall_theta_pid.kp * error +
+        wall_theta_pid.ki * wall_theta_pid.integral +
+        wall_theta_pid.kd * derivative;
 
   dif = clamp(dif, -STEERING_ADJUST_LIMIT, STEERING_ADJUST_LIMIT);
 
-  mouse.steering_adjustment = dif * SEARCH_SPEED / 200; // scale with speed
+  mouse.steering_adjustment = dif * motion.velocity() / 200; // scale with speed
 }

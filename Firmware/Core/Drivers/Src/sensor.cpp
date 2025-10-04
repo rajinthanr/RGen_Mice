@@ -199,15 +199,21 @@ void safety_stop(int duration = 100) {
 void collisionDetection(void) {
   if (!is_collision_detection)
     return;
+
+  static int32_t count = 0;
   // accY += get_accY() * 0.1 + accY * 0.9;
   // if (accY < -40) // If acceleration in Y direction exceeds 30 m/s^2]
-  if (abs(mouse.target_angle - angle) > 10) {
-    is_mouse_enable = 0;
-    drive_disable();
-    is_collided = 1;
-    print("Collision detected!\n");
-    LED3_ON;
-  }
+  if (abs(mouse.target_angle - angle) > 20) {
+    count++;
+    if (count > 3) {
+      is_mouse_enable = 0;
+      drive_disable();
+      is_collided = 1;
+      print("Collision detected!\n");
+      LED3_ON;
+    }
+  } else
+	  if(count>0)count--;
 }
 
 /*read voltage meter*/
