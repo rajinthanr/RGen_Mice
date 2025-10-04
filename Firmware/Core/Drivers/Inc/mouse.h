@@ -329,16 +329,12 @@ public:
 
   //***************************************************************************//
   void turn_right() {
-    print("Turning right\n");
     set_steering_mode(STEER_NORMAL);
     if (!maze.is_exit(m_location, m_heading)) {
-      print("move ahead %f\n",
-            FULL_CELL + HALF_CELL / 2 - SENSING_POSITION - 20);
       motion.move(FULL_CELL + HALF_CELL / 2 - SENSING_POSITION - 20,
                   SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
       float remaining = ((dis_reading[FL] + dis_reading[FR]) / 2 - HALF_CELL) -
                         POLE_WIDTH / 2;
-      print("Remaining: %f\n", remaining);
       motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     } else {
       motion.move(FULL_CELL * 1.5 - SENSING_POSITION, SEARCH_SPEED, 0,
@@ -346,11 +342,8 @@ public:
     }
     // LED4_OFF;
     set_steering_mode(STEERING_OFF);
-    print("Adjusting wall\n");
     wall_adjustment();
-    print("Turning right\n");
     turn_IP90R();
-    print("Turned right\n");
     motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
                       SEARCH_ACCELERATION);
     motion.set_position(HALF_CELL);
