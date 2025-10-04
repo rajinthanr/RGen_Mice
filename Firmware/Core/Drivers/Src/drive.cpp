@@ -1,7 +1,5 @@
 #include "drive.h"
 #include "core.h"
-#include "delay.h"
-#include "drive.h"
 #include "encoder.h"
 #include "icm.h"
 #include "main.h"
@@ -31,6 +29,8 @@ PIDController pid_left = {0.002f, 0.002f, 0.0f, 0.0f, 0.0f};
 PIDController pid_right = {0.002f, 0.002f, 0.0f, 0.0f, 0.0f};
 PIDController pid_position = {0.4f, 0.3f, 0.1f, 0.0f, 0.0f};
 PIDController pid_angle = {0.03f, 0.05f, 2.01f, 0.0f, 0.0f};
+
+#include "delay.h"
 
 // Target speeds (m/s)
 static float target_linear = 0.0f;
@@ -177,7 +177,7 @@ void drive(float left_speed, float right_speed) {
   uint16_t right_pwm = (uint16_t)(fabsf(right_speed) * 4095.0f) % 4096;
 
   static uint32_t last_debug_time = 0;
-  uint32_t now = millis();
+  uint32_t now = HAL_GetTick();
   if (debug_mot && (now - last_debug_time >= 400)) {
     print("l: %d, r: %d || l: %.2f, r: %.2f\n", left_pwm, right_pwm, left_speed,
           right_speed);
