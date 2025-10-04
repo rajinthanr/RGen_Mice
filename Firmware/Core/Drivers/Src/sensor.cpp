@@ -50,7 +50,7 @@ float dist(int ir_num) {
 
 bool is_wall(int w) {
   if (w == FL || w == FR)
-    return (get_front_dis() <= 225);
+    return (get_front_dis() <= 400);
   return dis_reading[w] <= 150;
 }
 
@@ -69,7 +69,9 @@ void readSensor(void) {
 
   // Take 'average' readings and compute the average for each sensor
   int avg_count = 1; // You can change this value or pass as a parameter
-  uint16_t exposure_time = 60; // in microseconds
+  uint16_t exposure_time = 80; // in microseconds
+
+  uint32_t curt = micros();
 
   int l_sum = 0, r_sum = 0, fl_sum = 0, fr_sum = 0;
   for (int i = 0; i < avg_count; ++i) {
@@ -85,7 +87,7 @@ void readSensor(void) {
 
   // Front wall sensors first
   FL_EM_ON;
-  delay_us(exposure_time);
+  elapseMicros(exposure_time, curt);
   int fl_em_sum = 0;
   for (int i = 0; i < avg_count; ++i)
     fl_em_sum += read_FL_Sensor;
@@ -93,7 +95,7 @@ void readSensor(void) {
   FL_EM_OFF;
 
   FR_EM_ON;
-  delay_us(exposure_time);
+  elapseMicros(exposure_time * 2, curt);
   int fr_em_sum = 0;
   for (int i = 0; i < avg_count; ++i)
     fr_em_sum += read_FR_Sensor;
@@ -105,7 +107,7 @@ void readSensor(void) {
   { // If front wall adjustment needed, skip side
     // sensors to save time
     L_EM_ON;
-    delay_us(exposure_time);
+    elapseMicros(exposure_time * 3, curt);
     int l_em_sum = 0;
     for (int i = 0; i < avg_count; ++i)
       l_em_sum += read_L_Sensor;
@@ -113,7 +115,7 @@ void readSensor(void) {
     L_EM_OFF;
 
     R_EM_ON;
-    delay_us(exposure_time);
+    elapseMicros(exposure_time * 4, curt);
     int r_em_sum = 0;
     for (int i = 0; i < avg_count; ++i)
       r_em_sum += read_R_Sensor;

@@ -192,6 +192,40 @@ void debug() {
       is_icm_init = 1;
     }
 
+    else if (strcmp(command, "trust_gyro") == 0) {
+      mouse.trust_gyro = !mouse.trust_gyro;
+      print("Trust gyro: %d\n", mouse.trust_gyro);
+    }
+
+    else if (strcmp(command, "help") == 0) {
+      print("Commands:\n"
+            "speed=<value>       - Set motor speed\n"
+            "l=<distance>        - Move forward by distance (mm)\n"
+            "a=<angle>           - Turn by angle (degrees)\n"
+            "ml=<value>          - Set max linear speed (mm/s)\n"
+            "ma=<value>          - Set max angular speed (deg/s)\n"
+            "mla=<value>         - Set max linear acceleration (mm/s^2)\n"
+            "maa=<value>         - Set max angular acceleration (deg/s^2)\n"
+            "set_goal=(x,y)     - Set maze goal location\n"
+            "info                - Print sensor and motion info\n"
+            "dis                 - Print distance sensor readings\n"
+            "enable_ir           - Toggle IR sensors\n"
+            "run                 - Toggle main loop run state\n"
+            "stop                - Emergency stop\n"
+            "reset               - Reset the system\n"
+            "calibrate_wall     - Start wall calibration\n"
+            "wall_front         - Test front wall detection\n"
+            "mouse_enable       - Toggle mouse movement enable\n"
+            "wall_follow        - Toggle wall following mode\n"
+            "map                 - Print maze map (plain)\n"
+            "mapc                - Print maze map with costs\n"
+            "save_maze          - Save maze to flash memory\n"
+            "load_maze          - Load maze from flash memory\n"
+            "init_icm           - Initialize ICM20602 sensor\n"
+            "trust_gyro         - Toggle trusting gyro for turns\n"
+            "help                - Show this help message\n");
+    }
+
     else {
       print("Unknown command: %s\n", cmdBuffer);
     }
