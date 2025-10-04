@@ -9,12 +9,9 @@
 #include "main.h"
 #include "pwm.h"
 
-int reflectionRate = 1000; // which is 1.000 (converted to ingeter)
 float cell_1 = 0;
 float cell_2 = 0;
 
-int32_t volMeter = 0;
-int32_t voltage = 0;
 int32_t LSensor = 0;
 int32_t RSensor = 0;
 int32_t FLSensor = 0;
@@ -70,11 +67,10 @@ void set_steering_mode(uint8_t mode) {
 /*read IR sensors*/
 void readSensor(void) {
   // if(is_sensor_active == false) return;
-  uint32_t curt;
-  // read DC value
 
   // Take 'average' readings and compute the average for each sensor
   int avg_count = 1; // You can change this value or pass as a parameter
+  uint16_t exposure_time = 80; // in microseconds
 
   int l_sum = 0, r_sum = 0, fl_sum = 0, fr_sum = 0;
   for (int i = 0; i < avg_count; ++i) {
@@ -88,86 +84,81 @@ void readSensor(void) {
   FLSensor = fl_sum / avg_count;
   FRSensor = fr_sum / avg_count;
 
-  curt = micros();
-
-  // left front sensor
-  L_EM_ON;
-  elapseMicros(80, curt);
-  // Take 100 readings and compute the average for LSensor after L_EM_ON
-  int l_em_sum = 0;
-  for (int i = 0; i < avg_count; ++i)
-    l_em_sum += read_L_Sensor;
-  LSensor = (l_em_sum / avg_count) - LSensor;
-  L_EM_OFF;
-  if (LSensor < 0) // error check
-    LSensor = 0;
-
-  // elapseMicros(140, curt);
-  //  right front sensor
-  R_EM_ON;
-  elapseMicros(160, curt);
-  // Take 100 readings and compute the average for RSensor after R_EM_ON
-  int r_em_sum = 0;
-  for (int i = 0; i < avg_count; ++i)
-    r_em_sum += read_R_Sensor;
-  RSensor = (r_em_sum / avg_count) - RSensor;
-  R_EM_OFF;
-  if (RSensor < 0)
-    RSensor = 0;
-  // elapseMicros(280, curt);
-  //  diagonal sensors
+  // Front wall sensors first
   FL_EM_ON;
-  elapseMicros(240, curt);
-  // Take 100 readings and compute the average for FLSensor after FL_EM_ON
+  delay_us(exposure_time);
   int fl_em_sum = 0;
   for (int i = 0; i < avg_count; ++i)
     fl_em_sum += read_FL_Sensor;
   FLSensor = (fl_em_sum / avg_count) - FLSensor;
+  FL_EM_OFF;
 
   FR_EM_ON;
-  elapseMicros(320, curt);
-  // Take 100 readings and compute the average for FRSensor after FR_EM_ON
+  delay_us(exposure_time);
   int fr_em_sum = 0;
   for (int i = 0; i < avg_count; ++i)
     fr_em_sum += read_FR_Sensor;
   FRSensor = (fr_em_sum / avg_count) - FRSensor;
-  FL_EM_OFF;
   FR_EM_OFF;
+
+  // Then the side wall sensors
+  if (!mouse.is_front_adjust) { // If front wall adjustment needed, skip side
+                                // sensors to save time
+    L_EM_ON;
+    delay_us(exposure_time);
+    int l_em_sum = 0;
+    for (int i = 0; i < avg_count; ++i)
+      l_em_sum += read_L_Sensor;
+    LSensor = (l_em_sum / avg_count) - LSensor;
+    L_EM_OFF;
+
+    R_EM_ON;
+    delay_us(exposure_time);
+    int r_em_sum = 0;
+    for (int i = 0; i < avg_count; ++i)
+      r_em_sum += read_R_Sensor;
+    RSensor = (r_em_sum / avg_count) - RSensor;
+    R_EM_OFF;
+  }
+
   if (FLSensor < 0)
     FLSensor = 0;
   if (FRSensor < 0)
     FRSensor = 0;
+  if (LSensor < 0)
+    LSensor = 0;
+  if (RSensor < 0)
+    RSensor = 0;
 
-  // readVolMeter();
-  static int sensor_history[4][100];
-  static int history_index = 0;
+  // // readVolMeter();
+  // static int sensor_history[4][100];
+  // static int history_index = 0;
 
-  // Store the current readings for all 4 sensors
-  sensor_history[0][history_index] = LSensor;
-  sensor_history[1][history_index] = FLSensor;
-  sensor_history[2][history_index] = FRSensor;
-  sensor_history[3][history_index] = RSensor;
+  // // Store the current readings for all 4 sensors
+  // sensor_history[0][history_index] = LSensor;
+  // sensor_history[1][history_index] = FLSensor;
+  // sensor_history[2][history_index] = FRSensor;
+  // sensor_history[3][history_index] = RSensor;
 
-  // Find max difference for each sensor
-  max_difference[4] = {0};
-  for (int s = 0; s < 4; s++) {
-    int max_val = sensor_history[s][1];
-    int min_val = sensor_history[s][1];
-    for (int i = 1; i < 100; i++) {
-      if (sensor_history[s][i] > max_val)
-        max_val = sensor_history[s][i];
-      if (sensor_history[s][i] < min_val)
-        min_val = sensor_history[s][i];
-    }
-    max_difference[s] = max_val - min_val;
-  }
+  // // Find max difference for each sensor
+  // max_difference[4] = {0};
+  // for (int s = 0; s < 4; s++) {
+  //   int max_val = sensor_history[s][1];
+  //   int min_val = sensor_history[s][1];
+  //   for (int i = 1; i < 100; i++) {
+  //     if (sensor_history[s][i] > max_val)
+  //       max_val = sensor_history[s][i];
+  //     if (sensor_history[s][i] < min_val)
+  //       min_val = sensor_history[s][i];
+  //   }
+  //   max_difference[s] = max_val - min_val;
+  // }
+  // history_index = (history_index + 1) % 100;
 
   reading[0] = LSensor;
   reading[1] = FLSensor;
   reading[2] = FRSensor;
   reading[3] = RSensor;
-
-  history_index = (history_index + 1) % 100;
 
   for (int i = 0; i < 4; i++) {
     dis_reading[i] = dist(i);
@@ -176,13 +167,10 @@ void readSensor(void) {
   dis_reading[FR] += FRONT_SENSOR_DISPLACEMENT;
   dis_reading[L] += SIDE_SENSOR_SPACING / 2;
   dis_reading[R] += SIDE_SENSOR_SPACING / 2;
-
-  // delay_us(80);
-  // elapseMicros(500,curt);
 }
-// there are 1000 - 340 = 660 us remaining in a 1ms_ISR
+// there are 1000 - 320 = 680 us remaining in a 1ms_ISR
 
-float get_front_sum() { return dis_reading[FL] + dis_reading[FR]; }
+float get_front_dis() { return (dis_reading[FL] + dis_reading[FR]) / 2; }
 
 /*read gyro*/
 void readGyro(void) { // k=19791(sum for sample in 1 second)    101376287 for 50
@@ -195,7 +183,6 @@ void readGyro(void) { // k=19791(sum for sample in 1 second)    101376287 for 50
 
 void safety_stop(int duration = 100) {
   drive_disable();
-  drive(0, 0);
   LEDS_OFF;
 
   while (1) {
@@ -216,7 +203,7 @@ void collisionAvoidance(void) {
 }
 
 /*read voltage meter*/
-void readVolMeter(void) { // 3240 = 7.85V
+void readVolMeter(void) {
   float c3_7 = readADC(2);
   float v7_4 = readADC(3);
 
@@ -268,42 +255,18 @@ void enable() { is_sensor_active = true; }
 
 void disable() { is_sensor_active = false; }
 
-uint8_t occluded_left() { return dis_reading[FL] < 80 && dis_reading[FR] > 80; }
-
-uint8_t occluded_right() {
-  return dis_reading[FL] > 80 && dis_reading[FR] < 80;
+uint8_t occluded_left() {
+  return dis_reading[FL] < 100 && dis_reading[FR] > 100;
 }
 
-uint8_t wait_for_user_start() {
-  int state = 0;
-  LED3_ON;
-  enable();
-  uint8_t choice = NO_START;
-  while (choice == NO_START) {
-    int count = 0;
-    while (occluded_left()) {
-      count++;
-      delay_ms(20);
-    }
-    if (count > 5) {
-      choice = LEFT_START;
-      break;
-    }
-    count = 0;
-    while (occluded_right()) {
-      count++;
-      delay_ms(20);
-    }
-    if (count > 5) {
-      choice = RIGHT_START;
-      break;
-    }
-    LED3_ON;
-    state = 1 - state;
-    delay_ms(25);
-  }
-  disable();
-  LED3_OFF;
-  delay_ms(250);
-  return choice;
+uint8_t occluded_right() {
+  return dis_reading[FL] > 100 && dis_reading[FR] < 100;
+}
+
+float clamp(float value, float min, float max) {
+  if (value < min)
+    return min;
+  else if (value > max)
+    return max;
+  return value;
 }

@@ -2,43 +2,42 @@
 #define SENSOR_FUNCTION_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-#include <stm32f4xx.h>
 #include "main.h"
 #include "stdint.h"
+#include <stm32f4xx.h>
 
-    extern int reflectionRate;
-    extern float cell_1;
-    extern float cell_2;
+extern int reflectionRate;
+extern float cell_1;
+extern float cell_2;
 
-    extern int32_t volMeter;
-    extern int32_t voltage;
-    extern int32_t LSensor;
-    extern int32_t RSensor;
-    extern int32_t FLSensor;
-    extern int32_t FRSensor;
-    extern int32_t Outz;
-    extern float aSpeed;
-    extern float angle;
+extern int32_t volMeter;
+extern int32_t voltage;
+extern int32_t LSensor;
+extern int32_t RSensor;
+extern int32_t FLSensor;
+extern int32_t FRSensor;
+extern int32_t Outz;
+extern float aSpeed;
+extern float angle;
 
-    extern uint8_t NO_START;
-    extern uint8_t LEFT_START;
-    extern uint8_t RIGHT_START;
+extern uint8_t NO_START;
+extern uint8_t LEFT_START;
+extern uint8_t RIGHT_START;
 
-    extern int reading[4];
-    extern float dis_reading[4];
-    extern uint8_t is_sensor_active;
+extern int reading[4];
+extern float dis_reading[4];
+extern uint8_t is_sensor_active;
 
-    enum {
+enum {
   STEER_NORMAL,
   STEER_LEFT_WALL,
   STEER_RIGHT_WALL,
   STEERING_OFF,
   GYRO_OFF
-  };
+};
 
 // Re-order to match logical order: FL, L, R, FR -> channels: 11,10,4,5
 #define read_L_Sensor readADC(10)
@@ -55,20 +54,21 @@ extern "C"
 #define FL_EM_ON HAL_GPIO_WritePin(TR_FL_GPIO_Port, TR_FL_Pin, GPIO_PIN_SET);
 #define FL_EM_OFF HAL_GPIO_WritePin(TR_FL_GPIO_Port, TR_FL_Pin, GPIO_PIN_RESET);
 
-    float dist(int ir_num);
-    bool is_wall(int w);
-    void readSensor(void);
-    float get_front_sum();
-    void readGyro(void);
-    void readVolMeter(void);
-    void lowBatCheck(void);
-    void IR_Configuration(void);
-    void enable();
-    void disable();
-    uint8_t occluded_left();
-    uint8_t occluded_right();
-    uint8_t wait_for_user_start();
-    void set_steering_mode(uint8_t mode);
+float dist(int ir_num);
+bool is_wall(int w);
+void readSensor(void);
+float get_front_dis();
+void readGyro(void);
+void readVolMeter(void);
+void lowBatCheck(void);
+void IR_Configuration(void);
+void enable();
+void disable();
+uint8_t occluded_left();
+uint8_t occluded_right();
+uint8_t wait_for_user_start();
+void set_steering_mode(uint8_t mode);
+float clamp(float value, float min, float max);
 
 #ifdef __cplusplus
 }

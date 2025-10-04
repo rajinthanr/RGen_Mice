@@ -14,6 +14,7 @@ float left_measured;
 float right_measured;
 uint8_t is_mouse_enable = 0;
 uint8_t is_wall_follow = 0;
+uint8_t is_icm_init = 0;
 
 // Retarget print to UART
 
@@ -185,6 +186,12 @@ int core(void) {
     if (is_calibrate) {
       cal_initial_wall();
       is_calibrate = 0;
+    }
+
+    if (is_icm_init) {
+      icm_initialize();
+      print("ICM initialized.\n");
+      is_icm_init = 0;
     }
   }
   return 0;

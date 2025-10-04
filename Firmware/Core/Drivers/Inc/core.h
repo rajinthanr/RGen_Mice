@@ -34,6 +34,7 @@ extern "C" {
 extern uint8_t is_run;
 extern uint8_t is_mouse_enable;
 extern uint8_t is_wall_follow;
+extern uint8_t is_icm_init;
 
 void systick(void);
 void button1_interrupt(void);

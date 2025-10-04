@@ -1,31 +1,30 @@
 #ifndef MOTION_H
 #define MOTION_H
 
-
-#include "profile.h"
 #include "delay.h"
 #include "drive.h"
-
+#include "profile.h"
 
 /***
  *
- * The motion class handles all the higher level Locomotion tasks. It is responsible
- * for converting instructions from a path planner into actual movement of the
- * robot.
+ * The motion class handles all the higher level Locomotion tasks. It is
+ * responsible for converting instructions from a path planner into actual
+ * movement of the robot.
  *
  * Motion control needs to know about the dynamics and kinematics of the robot
- * and may need environmental data as well. In particular, the battery voltage and
- * characteristics of the motors will be important.
+ * and may need environmental data as well. In particular, the battery voltage
+ * and characteristics of the motors will be important.
  *
  * The output from the motion controller should be suitable control signals for
  * the actuators that make the robot move. In UKMARSBOT, that will simply be
  * voltages for each of the two drive motors. Other robots may have more motors,
- * an independent steering system or other kinds of effectors such as grippers or
- * weapons. Remember that the motors may be stepper motors which will need a
+ * an independent steering system or other kinds of effectors such as grippers
+ * or weapons. Remember that the motors may be stepper motors which will need a
  * slightly modified approach.
  *
- * Here, the motion control makes use of simple trapezoidal profiles to calculate
- * continuously varying speeds for linear and rotary motion components.
+ * Here, the motion control makes use of simple trapezoidal profiles to
+ * calculate continuously varying speeds for linear and rotary motion
+ * components.
  *
  * How these speeds are converted into individual control signals for the drive
  * system is the job of the Motors class. Thus is should be relatively easy to
@@ -35,7 +34,7 @@
  * TODO: should it also be given the motors?
  */
 class Motion {
- public:
+public:
   /**
    * Before the robot begins a sequence of moves, this method can be used to
    * make sure everything starts off in a known state.
@@ -43,80 +42,60 @@ class Motion {
    * @brief Reset profiles, counters and controllers. Motors off. Steering off.
    */
   void reset_drive_system() {
-   //  motors.stop();
-   //  motors.disable_controllers();
-   //  encoders.reset();
-   //  forward.reset();
-   //  rotation.reset();
-   //  motors.reset_controllers();
-   //  motors.enable_controllers();
+    //  motors.stop();
+    //  motors.disable_controllers();
+    //  encoders.reset();
+    //  forward.reset();
+    //  rotation.reset();
+    //  motors.reset_controllers();
+    //  motors.enable_controllers();
   }
 
-  void stop() {
-    drive_dif(0, 0);
-  }
+  void stop() { drive(0, 0); }
 
-  void disable_drive() {
-    drive_disable();
-  }
+  void disable_drive() { drive_disable(); }
 
-  float position() {
-    return forward.position();
-  }
+  float position() { return forward.position(); }
 
-  float velocity() {
-    return forward.speed();
-  }
+  float velocity() { return forward.speed(); }
 
-  float acceleration() {
-    return forward.acceleration();
-  }
+  float acceleration() { return forward.acceleration(); }
 
   void set_target_velocity(float velocity) {
     forward.set_target_speed(velocity);
   }
 
-  void set_target_omega(float velocity) {
-    rotation.set_target_speed(velocity);
-  }
+  void set_target_omega(float velocity) { rotation.set_target_speed(velocity); }
 
-  void set_omega(float velocity) {
-    rotation.set_speed(velocity);
-  }
+  void set_omega(float velocity) { rotation.set_speed(velocity); }
 
-  float angle() {
-    return rotation.position();
-  }
+  float angle() { return rotation.position(); }
 
-  float omega() {
-    return rotation.speed();
-  }
+  float omega() { return rotation.speed(); }
 
-  float alpha() {
-    return rotation.acceleration();
-  }
+  float alpha() { return rotation.acceleration(); }
 
-  void start_move(float distance, float top_speed, float final_speed, float acceleration) {
+  void start_move(float distance, float top_speed, float final_speed,
+                  float acceleration) {
     forward.start(distance, top_speed, final_speed, acceleration);
   }
 
-  bool move_finished() {
-    return forward.is_finished();
-  }
+  bool move_finished() { return forward.is_finished(); }
 
-  void move(float distance, float top_speed, float final_speed, float acceleration) {
+  void move(float distance, float top_speed, float final_speed,
+            float acceleration) {
     forward.move(distance, top_speed, final_speed, acceleration);
   }
 
-  void start_turn(float distance, float top_speed, float final_speed, float acceleration) {
+  void start_turn(float distance, float top_speed, float final_speed,
+                  float acceleration) {
     rotation.start(distance, top_speed, final_speed, acceleration);
   }
 
-  bool turn_finished() {
-    return rotation.is_finished();
-  }
+  bool turn_finished() { return rotation.is_finished(); }
 
-  void turn(float distance, float top_speed, float final_speed, float acceleration) {
+  void turn(float distance, float top_speed, float final_speed,
+            float acceleration) {
     rotation.move(distance, top_speed, final_speed, acceleration);
   }
 
@@ -125,13 +104,9 @@ class Motion {
     rotation.update();
   }
 
-  void set_position(float pos) {
-    forward.set_position(pos);
-  }
+  void set_position(float pos) { forward.set_position(pos); }
 
-  void adjust_forward_position(float delta) {
-    forward.adjust_position(delta);
-  }
+  void adjust_forward_position(float delta) { forward.adjust_position(delta); }
 
   //***************************************************************************//
 
