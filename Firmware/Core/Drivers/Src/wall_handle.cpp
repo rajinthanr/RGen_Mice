@@ -9,14 +9,6 @@ int wall_state, pre_wall_state;
 bool is_calibrate = 0;
 bool is_wall_front = 0;
 
-typedef struct {
-  float kp;
-  float ki;
-  float kd;
-  float integral;
-  float previous_error;
-} PID;
-
 PID pid_theta = {10.5f, 0.10f, 0.0f, 0, 0};
 PID pid_distance = {30.0f, 0.3f, 0.1f, 0, 0};
 
@@ -100,54 +92,32 @@ float wallFront() {
   // motion.set_target_velocity(correction_speed);
 }
 
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+PID wall_theta_pid = {5.0f, 0.0f, 0.05f, 0, 0};
+
 void wallFollow(bool include_left, bool include_right) {
   float error = 0;
 
-  if (include_left && is_wall(L) && include_right && is_wall(R)) {
-    wall_state = 0;
-
+  if (include_left && is_wall(L) && include_right && is_wall(R))
     error = (dis_reading[R] - dis_reading[L]) / 2;
-  }
 
-  else if (!is_wall(L) && include_right && is_wall(R)) {
+  else if (!is_wall(L) && include_right && is_wall(R))
     // digitalWrite(LED_PIN, HIGH);
-    wall_state = 1;
     error = dis_reading[R] - HALF_CELL;
-  }
 
-  else if (include_left && is_wall(L) && !is_wall(R)) {
-    wall_state = 2;
+  else if (include_left && is_wall(L) && !is_wall(R))
     error = HALF_CELL - dis_reading[L];
-  } else if (!is_wall(L) && !is_wall(R)) {
-    wall_state = 3;
-    return;
-  }
-
-  pre_wall_state = wall_state;
 
   // Use error as input to wall theta PID using a new PID object
-  static PID wall_theta_pid = {5.0f, 0.05f, 0.05f, 0, 0};
 
   static float dif = 0;
   error = -error;
 
-  if (abs(dif) > STEERING_ADJUST_LIMIT && error * dif > 0) {
-  } else {
-    wall_theta_pid.integral += error;
-  }
   float derivative = error - wall_theta_pid.previous_error;
   wall_theta_pid.previous_error = error;
 
-  if (reset_wall_pid) {
-    wall_theta_pid.integral = error;
-    derivative = 0;
-    reset_wall_pid = false;
-  }
-
-  wall_theta_pid.integral = clamp(wall_theta_pid.integral, -50, 50);
-
-  dif = wall_theta_pid.kp * error +
-        wall_theta_pid.ki * wall_theta_pid.integral +
+  dif = wall_theta_pid.kp * error + // PD
         wall_theta_pid.kd * derivative;
 
   dif = clamp(dif, -STEERING_ADJUST_LIMIT, STEERING_ADJUST_LIMIT);

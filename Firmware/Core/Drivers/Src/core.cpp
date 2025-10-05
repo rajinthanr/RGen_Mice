@@ -15,7 +15,7 @@ uint8_t is_wall_follow = 0;
 uint8_t is_icm_init = 0;
 
 //****************** User Configurable Parameters ***************** */
-Location GOAL(7, 7); // default goal location ********************
+Location GOAL(5, 1); // default goal location ********************
 Location HOME(0, 0);
 
 void systick(void) {
@@ -49,7 +49,9 @@ int core(void) {
   readVolMeter();
 
   maze.initialise();
+  maze.set_goal(GOAL);
   drive_init();
+
   print("Core initialized\r\n");
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

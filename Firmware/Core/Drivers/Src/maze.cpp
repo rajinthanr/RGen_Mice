@@ -169,8 +169,35 @@ void Maze::flood(const Location target) {
     uint16_t newCost = m_cost[here.x][here.y] + 1;
     for (int h = NORTH; h < HEADING_COUNT; h++) {
       Heading heading = static_cast<Heading>(h);
+      Location nextCell = here.neighbour(heading);
       if (is_exit(here, heading)) {
-        Location nextCell = here.neighbour(heading);
+        if (m_cost[nextCell.x][nextCell.y] > newCost) {
+          m_cost[nextCell.x][nextCell.y] = newCost;
+          queue.add(nextCell);
+        }
+      }
+    }
+  }
+}
+
+void Maze::fast_flood(const Location target) {
+  for (int x = 0; x < MAZE_WIDTH; x++) {
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+      m_cost[x][y] = (uint8_t)MAX_COST;
+    }
+  }
+
+  Queue<Location, MAZE_CELL_COUNT / 4> queue;
+  m_cost[target.x][target.y] = 0;
+  queue.add(target);
+
+  while (queue.size() > 0) {
+    Location here = queue.head();
+    uint16_t newCost = m_cost[here.x][here.y] + 1;
+    for (int h = NORTH; h < HEADING_COUNT; h++) {
+      Heading heading = static_cast<Heading>(h);
+      Location nextCell = here.neighbour(heading);
+      if (is_exit(here, heading) && cell_is_visited(nextCell)) {
         if (m_cost[nextCell.x][nextCell.y] > newCost) {
           m_cost[nextCell.x][nextCell.y] = newCost;
           queue.add(nextCell);

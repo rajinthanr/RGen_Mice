@@ -225,7 +225,7 @@ void debug() {
 // Map printing and logging functions
 // ************************************************************************************************************************************
 
-#define POST 'o'
+#define POST '+'
 #define ERR '?'
 #define GAP "         "
 #define H_WALL "------"
@@ -241,8 +241,8 @@ void print_justified(int32_t value, int width) {
   int v = value;
   int w = width;
   w--;
-  if (v < 0) {
-    w--;
+  if (v < 10) {
+    print("");
   }
   while (v /= 10) {
     w--;
@@ -251,7 +251,7 @@ void print_justified(int32_t value, int width) {
     print("  ");
     --w;
   }
-  print("%d", value);
+  print("  %d  ", value);
 }
 
 void print_h_wall(uint8_t state) {
@@ -303,7 +303,10 @@ void print_maze(int style) {
         print("%c", V_UNKN);
       }
       if (style == COSTS) {
-        print_justified((int)maze.cost(location), 3);
+        if (maze.cost(location) == 255)
+          print("         ");
+        else
+          print_justified((int)maze.cost(location) % 10, 2);
       } else if (style == DIRS) {
         unsigned char direction = maze.heading_to_smallest(location, NORTH);
         if (location == maze.goal()) {

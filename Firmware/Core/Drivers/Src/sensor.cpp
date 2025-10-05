@@ -51,7 +51,7 @@ float dist(int ir_num) {
 
 bool is_wall(int w) {
   if (w == FL || w == FR)
-    return (get_front_dis() <= 400);
+    return (get_front_dis() <= 300);
   return dis_reading[w] <= 150;
 }
 
@@ -161,8 +161,12 @@ void readSensor(void) {
   reading[2] = FRSensor;
   reading[3] = RSensor;
 
+  // Apply low-pass filter with alpha = 0.1 to distance readings
+  static float filtered_dist[4] = {0};
   for (int i = 0; i < 4; i++) {
-    dis_reading[i] = dist(i);
+    float new_dist = dist(i);
+    filtered_dist[i] = 0.1f * new_dist + 0.9f * filtered_dist[i];
+    dis_reading[i] = filtered_dist[i];
   }
   dis_reading[FL] += FRONT_SENSOR_DISPLACEMENT;
   dis_reading[FR] += FRONT_SENSOR_DISPLACEMENT;
@@ -212,8 +216,8 @@ void collisionDetection(void) {
       print("Collision detected!\n");
       LED3_ON;
     }
-  } else
-	  if(count>0)count--;
+  } else if (count > 0)
+    count--;
 }
 
 /*read voltage meter*/

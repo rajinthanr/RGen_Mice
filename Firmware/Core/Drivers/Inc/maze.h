@@ -91,6 +91,8 @@ public:
   uint16_t cost(const Location cell) const;
 
   void flood(const Location target);
+  void fast_flood(const Location target);
+
   Heading heading_to_smallest(const Location cell,
                               const Heading start_heading) const;
 

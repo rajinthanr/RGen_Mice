@@ -182,7 +182,8 @@ public:
   }
 
   void stop_at_center() {
-    bool has_wall = is_wall(FL);
+    LED4_ON;
+    uint8_t has_wall = is_wall(FL);
     set_steering_mode(STEERING_OFF);
     if (has_wall) {
       float remaining = (get_front_dis() - HALF_CELL);
@@ -192,6 +193,9 @@ public:
       remaining = (get_front_dis() - HALF_CELL);
       print("Stopping at center, remaining: %.2f\n", remaining);
       motion.move(remaining, SEARCH_SPEED / 2, 0, SEARCH_ACCELERATION);
+    } else {
+      motion.move(FULL_CELL + HALF_CELL - SENSING_POSITION - POLE_WIDTH / 2,
+                  SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     }
     wall_adjustment();
     motion.stop();
@@ -394,15 +398,15 @@ public:
     // Each iteration of this loop starts at the sensing point
     while (m_location != target) {
       log_action_status('-', ' ', m_location, m_heading);
-      set_steering_mode(STEER_NORMAL);
       m_location =
           m_location.neighbour(m_heading); // the cell we are about to enter
+      set_steering_mode(STEER_NORMAL);
 
       update_map();
       maze.flood(target);
       unsigned char newHeading =
           maze.heading_to_smallest(m_location, m_heading);
-      if (newHeading == BLOCKED) {
+      if (newHeading == BLOCKED && m_location != target) {
         // we are stuck - no way out
         print("Stuck!\n");
         print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
@@ -411,6 +415,8 @@ public:
         break;
       }
       unsigned char hdgChange = (newHeading - m_heading) & 0x3;
+
+      LED2_TOGGLE;
 
       if (m_location != target) {
         print("%d \n", hdgChange);
@@ -444,10 +450,9 @@ public:
     // halt in the middle of that cell
     print("Stopping in center\n");
     stop_at_center();
-    ;
     print("\n");
     print("Arrived!  \n");
-    delay_ms(250);
+    delay_ms(1000);
     motion.reset_drive_system();
     set_steering_mode(STEERING_OFF);
     return m_location == target;
@@ -455,7 +460,7 @@ public:
   /****************************************************************************/
 
   uint8_t fast_run(Location target) {
-    maze.flood(target);
+    maze.fast_flood(target);
     if (!initiate_run()) {
       return 0;
     }
@@ -474,7 +479,7 @@ public:
       unsigned char newHeading =
           maze.heading_to_smallest(m_location, m_heading);
 
-      if (newHeading == BLOCKED) {
+      if (newHeading == BLOCKED && m_location != target) {
         print("Stuck!\n");
         print("e %d\n", maze.heading_to_smallest(m_location, m_heading));
         motion.move(FULL_CELL * 1.5 - SENSING_POSITION, SEARCH_SPEED, 0,
@@ -528,7 +533,7 @@ public:
   void plan(Location target) {
     clear();
     maze.load_from_flash();
-    maze.flood(target);
+    maze.fast_flood(target);
 
     Location planLocation = m_location;
     Heading planHeading = maze.heading_to_smallest(planLocation, m_heading);
@@ -537,7 +542,7 @@ public:
 
     while (planLocation != target) {
       Heading newHeading = maze.heading_to_smallest(planLocation, planHeading);
-      if (newHeading == BLOCKED) {
+      if (newHeading == BLOCKED && planLocation != target) {
         // we are stuck!
         break;
       }
@@ -612,9 +617,6 @@ public:
     }
 
     for (uint16_t i = 0; i < num_moves; i++) {
-      is_left_wall = !maze.is_exit(m_location, left_from(m_heading));
-      is_right_wall = !maze.is_exit(m_location, right_from(m_heading));
-
       switch (mpath[i].direction) {
       case AHEAD: {
         if (i == 0)

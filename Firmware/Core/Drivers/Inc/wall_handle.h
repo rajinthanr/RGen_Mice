@@ -2,8 +2,7 @@
 #define WALL_HANDLE_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 #include "variables.h"
 
@@ -12,15 +11,24 @@ extern "C"
 #define FR 2
 #define R 3
 
-    extern bool is_calibrate;
-    extern bool is_wall_front;
+typedef struct {
+  float kp;
+  float ki;
+  float kd;
+  float integral;
+  float previous_error;
+} PID;
 
-    void Wall_Configuration(void);
-    float sqrtf(float x);
-    void cal_initial_wall();
-    void get_cal_initial_wall();
-    float wallFront();
-    void wallFollow(bool include_left, bool include_right);
+extern bool is_calibrate;
+extern bool is_wall_front;
+extern PID wall_theta_pid;
+
+void Wall_Configuration(void);
+float sqrtf(float x);
+void cal_initial_wall();
+void get_cal_initial_wall();
+float wallFront();
+void wallFollow(bool include_left, bool include_right);
 
 #ifdef __cplusplus
 }
