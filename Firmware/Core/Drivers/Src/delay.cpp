@@ -32,7 +32,7 @@ uint32_t micros(void)
 uint32_t millis(void)
 {
 	return Millis;
-}
+ }
 
 void delay_ms(uint32_t nTime)
 {

@@ -37,7 +37,15 @@ enum MazeMask {
 };
 
 enum Heading { NORTH, EAST, SOUTH, WEST, HEADING_COUNT, BLOCKED = 99 };
-enum Direction { AHEAD, RIGHT, BACK, LEFT, DIRECTION_COUNT };
+enum Direction {
+  AHEAD,
+  RIGHT,
+  BACK,
+  LEFT,
+  DIRECTION_COUNT,
+  DIAGONAL_LEFT,
+  DIAGONAL_RIGHT
+};
 
 class Location {
 public:

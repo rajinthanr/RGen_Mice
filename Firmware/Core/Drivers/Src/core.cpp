@@ -15,7 +15,7 @@ uint8_t is_wall_follow = 0;
 uint8_t is_icm_init = 0;
 
 //****************** User Configurable Parameters ***************** */
-Location GOAL(4, 10); // default goal location ********************
+Location GOAL(7, 7); // default goal location ********************
 Location HOME(0, 0);
 
 void systick(void) {
@@ -56,7 +56,7 @@ int core(void) {
 
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // maze.set_goal(GOAL);
-  // mouse.plan(maze.goal());
+  // mouse.plan_diagonal(maze.goal());
   // mouse.print_plan();
 
   if (switches.key_pressed()) {
@@ -99,6 +99,13 @@ int core(void) {
             ;
           delay_ms(20);
           is_decided = 3;
+        } else if (switches.boot_pressed()) {
+          LED_Blink(3, 100, 3);
+          print("Optimized diagonal run selected\n");
+          while (switches.boot_pressed())
+            ;
+          delay_ms(20);
+          is_decided = 4;
         }
       }
 
@@ -147,6 +154,21 @@ int core(void) {
         mouse.print_plan();
         mouse.home_run();
         if (mouse.start()) {
+          mouse.is_smooth_turn = 0; // return with stability
+          mouse.smooth_only = 0;
+          mouse.plan(HOME);
+          mouse.print_plan();
+          mouse.start();
+        }
+        is_mouse_enable = 0;
+        drive_disable();
+      }
+
+      else if (is_decided == 4) {
+        mouse.plan_diagonal(maze.goal());
+        mouse.print_plan();
+        mouse.home_run();
+        if (mouse.start_diagonal()) {
           mouse.is_smooth_turn = 0; // return with stability
           mouse.smooth_only = 0;
           mouse.plan(HOME);

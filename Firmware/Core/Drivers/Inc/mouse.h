@@ -186,8 +186,56 @@ public:
     num_straights = 0;
   }
 
+  void turn_smooth_left_full_cell() {
+    float perimeter = 0.25 * 2.0f * 3.14159f * (HALF_CELL);
+    float omega = 90 / (perimeter / SEARCH_SPEED); // deg/s
+
+    set_steering_mode(STEERING_OFF);
+
+    if (trust_gyro)
+      motion.start_turn(0.0f - (angle - m_angle), omega, omega, 10000);
+
+    if (trust_gyro)
+      motion.start_turn(90.0f - (angle - m_angle), omega, 0, 10000);
+    else
+      motion.start_turn(90.0f, omega, 0, 10000);
+    motion.move(perimeter, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.set_omega(0);
+
+    // turn_smooth(SS90EL);
+    m_heading = left_from(m_heading);
+    set_steering_mode(STEER_NORMAL);
+    m_angle += 90;
+    num_smooths++;
+    num_straights = 0;
+  }
+
+  void turn_smooth_right_full_cell() {
+
+    float perimeter = 0.25 * 2.0f * 3.14159f * (HALF_CELL);
+    float omega = 90 / (perimeter / SEARCH_SPEED); // deg/s
+
+    set_steering_mode(STEERING_OFF);
+
+    if (trust_gyro)
+      motion.start_turn(0.0f - (angle - m_angle), omega, omega, 10000);
+
+    if (trust_gyro)
+      motion.start_turn(-90.0f - (angle - m_angle), omega, 0, 10000);
+    else
+      motion.start_turn(-90.0f, omega, 0, 10000);
+    motion.move(perimeter, SEARCH_SPEED, SEARCH_SPEED, SEARCH_ACCELERATION);
+    motion.set_omega(0);
+
+    // turn_smooth(SS90EL);
+    m_heading = right_from(m_heading);
+    set_steering_mode(STEER_NORMAL);
+    m_angle -= 90;
+    num_smooths++;
+    num_straights = 0;
+  }
+
   void stop_at_center() {
-    LED4_ON;
     uint8_t has_wall = is_wall(FL);
     set_steering_mode(STEERING_OFF);
     if (has_wall) {
@@ -199,8 +247,26 @@ public:
       print("Stopping at center, remaining: %.2f\n", remaining);
       motion.move(remaining, SEARCH_SPEED / 2, 0, SEARCH_ACCELERATION);
     } else {
-      motion.move(FULL_CELL + HALF_CELL - SENSING_POSITION - POLE_WIDTH / 2,
-                  SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+      motion.move(FULL_CELL + HALF_CELL - SENSING_POSITION, SEARCH_SPEED, 0,
+                  SEARCH_ACCELERATION);
+    }
+    wall_adjustment();
+    motion.stop();
+  }
+
+  void stop_at_center_full_cell() {
+    uint8_t has_wall = is_wall(FL);
+    set_steering_mode(STEERING_OFF);
+    if (has_wall) {
+      float remaining = (get_front_dis() - HALF_CELL);
+      print("Stopping at center, remaining: %.2f\n", remaining);
+      motion.move(remaining / 2, SEARCH_SPEED / 2, SEARCH_SPEED / 2,
+                  SEARCH_ACCELERATION);
+      remaining = (get_front_dis() - HALF_CELL);
+      print("Stopping at center, remaining: %.2f\n", remaining);
+      motion.move(remaining, SEARCH_SPEED / 2, 0, SEARCH_ACCELERATION);
+    } else {
+      motion.move(HALF_CELL, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
     }
     wall_adjustment();
     motion.stop();
@@ -272,6 +338,31 @@ public:
     m_heading = left_from(m_heading);
   }
 
+  void turn_left_full_cell() {
+    set_steering_mode(STEER_NORMAL);
+    if (!maze.is_exit(m_location, m_heading)) {
+      motion.move(HALF_CELL - 20, SEARCH_SPEED, SEARCH_SPEED,
+                  SEARCH_ACCELERATION);
+      float remaining = (get_front_dis() - HALF_CELL) - POLE_WIDTH / 2;
+      motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    } else {
+      if (is_smooth_turn) {
+        turn_smooth_left_full_cell();
+        return;
+      }
+      motion.move(HALF_CELL, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    }
+
+    set_steering_mode(STEERING_OFF);
+    wall_adjustment();
+    turn_IP90L();
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
+                      SEARCH_ACCELERATION);
+    motion.set_position(HALF_CELL);
+    motion.wait_until_position(FULL_CELL);
+    m_heading = left_from(m_heading);
+  }
+
   //***************************************************************************//
   void turn_right() {
     set_steering_mode(STEER_NORMAL);
@@ -298,6 +389,31 @@ public:
     motion.set_position(HALF_CELL);
     motion.wait_until_position(SENSING_POSITION);
     // turn_smooth(SS90ER);
+    m_heading = right_from(m_heading);
+  }
+
+  void turn_right_full_cell() {
+    set_steering_mode(STEER_NORMAL);
+    if (!maze.is_exit(m_location, m_heading)) {
+      motion.move(HALF_CELL - 20, SEARCH_SPEED, SEARCH_SPEED,
+                  SEARCH_ACCELERATION);
+      float remaining = (get_front_dis() - HALF_CELL) - POLE_WIDTH / 2;
+      motion.move(remaining, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    } else {
+      if (is_smooth_turn) {
+        turn_smooth_right_full_cell();
+        return;
+      }
+      motion.move(HALF_CELL, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    }
+
+    set_steering_mode(STEERING_OFF);
+    wall_adjustment();
+    turn_IP90R();
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
+                      SEARCH_ACCELERATION);
+    motion.set_position(HALF_CELL);
+    motion.wait_until_position(FULL_CELL);
     m_heading = right_from(m_heading);
   }
 
@@ -576,6 +692,66 @@ public:
     }
   }
 
+  //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
+  // Optimized fast run with diagonal
+
+  void plan_diagonal(Location target) {
+    clear();
+    maze.load_from_flash();
+    maze.fast_flood(target);
+
+    Location planLocation = m_location;
+    Heading planHeading = maze.heading_to_smallest(planLocation, m_heading);
+
+    uint16_t i = 0;
+    bool lastWasTurn = false;
+    Direction lastTurnDir = AHEAD;
+
+    while (planLocation != target) {
+      Heading newHeading = maze.heading_to_smallest(planLocation, planHeading);
+      if (newHeading == BLOCKED && planLocation != target) {
+        // we are stuck!
+        break;
+      }
+
+      unsigned char hdgChange =
+          (newHeading + HEADING_COUNT - planHeading) % HEADING_COUNT;
+      Direction movedir = static_cast<Direction>(hdgChange);
+
+      // Detect diagonal: alternating left/right turns
+      if ((movedir == LEFT || movedir == RIGHT) && lastWasTurn &&
+          movedir != lastTurnDir) {
+        // Mark as diagonal move (custom logic, e.g., use a special Direction
+        // value)
+        if (mpath[i].direction != DIAGONAL_LEFT &&
+            mpath[i].direction != DIAGONAL_RIGHT) {
+          mpath[i].direction =
+              (lastTurnDir == LEFT) ? DIAGONAL_LEFT : DIAGONAL_RIGHT;
+        }
+        mpath[i].cell_count += 1;
+        lastWasTurn = true; // continue
+        lastTurnDir = movedir;
+      } else if (mpath[i].direction == movedir && movedir == AHEAD) {
+        mpath[i].direction = AHEAD;
+        mpath[i].cell_count++;
+        lastWasTurn = false;
+      } else {
+        i += 1;
+        mpath[i].direction = movedir;
+        mpath[i].cell_count = 1;
+        lastWasTurn = (movedir == LEFT || movedir == RIGHT);
+        lastTurnDir = movedir;
+      }
+
+      planHeading = newHeading;
+      planLocation = planLocation.neighbour(newHeading);
+    }
+
+    if (planLocation == target) {
+      num_moves = i + 1;
+    }
+  }
+
   //------------------------------------------------------//
   // Clear previous plan
   //------------------------------------------------------//
@@ -605,6 +781,12 @@ public:
         break;
       case BACK:
         print("B");
+        break;
+      case DIAGONAL_LEFT:
+        print("DL");
+        break;
+      case DIAGONAL_RIGHT:
+        print("DR");
         break;
       default:
         print("?");
@@ -693,6 +875,177 @@ public:
     return 1;
   }
 
+  //------------------------------------------------------//
+  // Execute fast run based on mpath[]
+  //------------------------------------------------------//
+  uint8_t start_diagonal() {
+    if (!initiate_run_diagonal()) {
+      return 0;
+    }
+
+    for (uint16_t i = 0; i < num_moves; i++) {
+      if (smooth_only)
+        num_smooths = 0;
+      switch (mpath[i].direction) {
+      case AHEAD: {
+        if (i == 0)
+          mpath[i].cell_count -= 1;
+        float s = mpath[i].cell_count * FULL_CELL / 2;
+        float u = SEARCH_SPEED;
+        float v = u * u + 2 * (SEARCH_ACCELERATION)*s;
+        v = sqrt(v);
+        v = clamp(v, -1800, 1800);
+        if (mpath[i + 1].direction == DIAGONAL_LEFT ||
+            mpath[i + 1].direction == DIAGONAL_RIGHT)
+          motion.start_move(s * 2, v, 5, SEARCH_ACCELERATION);
+        else
+          motion.start_move(s * 2, v, u, SEARCH_ACCELERATION);
+        set_steering_mode(STEER_NORMAL);
+        motion.set_position(0);
+        for (uint8_t j = 1; j <= mpath[i].cell_count; j++) {
+          m_location = m_location.neighbour(m_heading);
+          log_action_status('-', ' ', m_location, m_heading);
+          print("\n");
+          motion.wait_until_position(j * FULL_CELL);
+          num_straights++;
+        }
+      } break;
+
+      case RIGHT: {
+        m_location = m_location.neighbour(m_heading);
+        log_action_status('-', ' ', m_location, m_heading);
+        print("\n");
+        if (is_smooth_turn && (num_straights > 2 || num_smooths < 2))
+          turn_smooth_right_full_cell();
+        else
+          turn_right_full_cell();
+        break;
+
+      case LEFT:
+        m_location = m_location.neighbour(m_heading);
+        log_action_status('-', ' ', m_location, m_heading);
+        print("\n");
+        if (is_smooth_turn && (num_straights > 2 || num_smooths < 2))
+          turn_smooth_left_full_cell();
+        else
+          turn_left_full_cell();
+      } break;
+
+      case DIAGONAL_LEFT: {
+        set_steering_mode(STEERING_OFF);
+        motion.emergency_stop();
+
+        motion.turn(45 - (angle - m_angle), SEARCH_TURN_SPEED, 0, 10000);
+        // delay_ms(500);
+        m_angle += 45;
+        uint8_t cell_count = mpath[i].cell_count;
+        float diagonal_distance = cell_count * sqrt(2) * HALF_CELL;
+        float s = diagonal_distance / 2;
+        float u = SEARCH_SPEED;
+        float v = u * u + 2 * (SEARCH_ACCELERATION)*s;
+        v = sqrt(v);
+        if (SEARCH_SPEED < 400)
+          v = clamp(v, -400, 400);
+        else
+          v = clamp(v, -1800, 1800);
+        motion.start_move(s * 2, v, u, SEARCH_ACCELERATION);
+        motion.set_position(0);
+
+        Direction nowDir = LEFT;
+        // Implement diagonal left movement logic here
+        // Example: move diagonally left for mpath[i].cell_count cells
+        for (uint8_t j = 1; j <= mpath[i].cell_count; j++) {
+          m_location = m_location.neighbour(m_heading);
+          motion.wait_until_position(j * sqrt(2) * HALF_CELL);
+          if (nowDir == LEFT)
+            m_heading = left_from(m_heading);
+          else if (nowDir == RIGHT)
+            m_heading = right_from(m_heading);
+          log_action_status('D', 'L', m_location, m_heading);
+          print("Diagonal Left\n");
+          // Add diagonal movement function if available
+          nowDir = (nowDir == LEFT) ? RIGHT : LEFT;
+        }
+        LED4_ON;
+        print("END Diagonal Left\n");
+        Direction nextDir = (nowDir == LEFT) ? RIGHT : LEFT;
+        motion.emergency_stop();
+        // delay_ms(500);
+        motion.turn((nextDir == LEFT ? 45 : -45 - (angle - m_angle)),
+                    SEARCH_TURN_SPEED, 0, 10000);
+        motion.emergency_stop();
+        delay_ms(500);
+        m_angle += (nextDir == LEFT ? 45 : -45);
+        LED4_OFF;
+      } break;
+
+      case DIAGONAL_RIGHT: {
+        set_steering_mode(STEERING_OFF);
+        motion.emergency_stop();
+
+        motion.turn(-45 - (angle - m_angle), SEARCH_TURN_SPEED, 0, 10000);
+        // delay_ms(500);
+        m_angle -= 45;
+        uint8_t cell_count = mpath[i].cell_count;
+        float diagonal_distance = cell_count * sqrt(2) * HALF_CELL;
+        float s = diagonal_distance / 2;
+        float u = SEARCH_SPEED;
+        float v = u * u + 2 * (SEARCH_ACCELERATION)*s;
+        v = sqrt(v);
+        if (SEARCH_SPEED < 400)
+          v = clamp(v, -400, 400);
+        else
+          v = clamp(v, -1800, 1800);
+        motion.start_move(s * 2, v, u, SEARCH_ACCELERATION);
+        motion.set_position(0);
+
+        Direction nowDir = RIGHT;
+        // Implement diagonal left movement logic here
+        // Example: move diagonally left for mpath[i].cell_count cells
+        for (uint8_t j = 1; j <= mpath[i].cell_count; j++) {
+          m_location = m_location.neighbour(m_heading);
+          motion.wait_until_position(j * sqrt(2) * HALF_CELL);
+          if (nowDir == LEFT)
+            m_heading = left_from(m_heading);
+          else if (nowDir == RIGHT)
+            m_heading = right_from(m_heading);
+          log_action_status('D', 'R', m_location, m_heading);
+          print("Diagonal Right\n");
+          // Add diagonal movement function if available
+          nowDir = (nowDir == LEFT) ? RIGHT : LEFT;
+        }
+        LED4_ON;
+        print("End Diagonal Right\n");
+        Direction nextDir = (nowDir == LEFT) ? RIGHT : LEFT;
+        motion.emergency_stop();
+        // delay_ms(500);
+        motion.turn((nextDir == LEFT ? 45 : -45) - (angle - m_angle),
+                    SEARCH_TURN_SPEED, 0, 10000);
+        motion.emergency_stop();
+        // delay_ms(500);
+        m_angle += (nextDir == LEFT ? 45 : -45);
+        LED4_OFF;
+      } break;
+
+      default:
+        print("?");
+      }
+    }
+    set_steering_mode(STEERING_OFF);
+
+    m_location = m_location.neighbour(m_heading);
+    log_action_status('-', ' ', m_location, m_heading);
+    stop_at_center_full_cell();
+    print("\n");
+
+    print("Stopping in center\n");
+    print("\n");
+    print("Arrived!  \n");
+    delay_ms(250);
+    motion.reset_drive_system();
+    return 1;
+  }
+
   uint8_t initiate_run() {
     Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
     if (newHeading == BLOCKED) {
@@ -710,6 +1063,28 @@ public:
 
     print("Starting run...\n");
     motion.wait_until_position(SENSING_POSITION);
+    return 1;
+  }
+
+  uint8_t initiate_run_diagonal() { // every box evaluated on grid lines
+    Heading newHeading = maze.heading_to_smallest(m_location, m_heading);
+    if (newHeading == BLOCKED) {
+      print("Stuck!\n");
+      return 0;
+    }
+
+    turn_to_face(newHeading);
+    // motion.reset_drive_system();
+    set_steering_mode(STEERING_OFF); // never steer from zero speed
+
+    motion.start_move(FULL_CELL, SEARCH_SPEED, SEARCH_SPEED,
+                      SEARCH_ACCELERATION);
+    motion.set_position(HALF_CELL);
+
+    print("Starting run...\n");
+    motion.wait_until_position(FULL_CELL); // stop at grid lines
+    // motion.emergency_stop();
+    // delay_ms(1000);
     return 1;
   }
 

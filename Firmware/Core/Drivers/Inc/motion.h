@@ -65,9 +65,18 @@ public:
     forward.set_target_speed(velocity);
   }
 
+  void emergency_stop() {
+    forward.set_target_speed(0);
+    rotation.set_target_speed(0);
+    forward.finish();
+    rotation.finish();
+  }
+
   void set_target_omega(float velocity) { rotation.set_target_speed(velocity); }
 
   void set_omega(float velocity) { rotation.set_speed(velocity); }
+
+  void set_velocity(float velocity) { forward.set_speed(velocity); }
 
   float angle() { return rotation.position(); }
 
