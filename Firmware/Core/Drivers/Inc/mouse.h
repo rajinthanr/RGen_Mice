@@ -715,7 +715,8 @@ public:
 
   void home_run() {
     set_steering_mode(STEERING_OFF);
-    motion.move(HALF_CELL - 21, SEARCH_SPEED, 0, SEARCH_ACCELERATION);
+    motion.move(HALF_CELL - POLE_WIDTH / 2 - BACK_WALL_TO_CENTER, SEARCH_SPEED,
+                SEARCH_SPEED, SEARCH_ACCELERATION);
   }
 };
 

@@ -15,7 +15,7 @@ uint8_t is_wall_follow = 0;
 uint8_t is_icm_init = 0;
 
 //****************** User Configurable Parameters ***************** */
-Location GOAL(7, 7); // default goal location ********************
+Location GOAL(4, 10); // default goal location ********************
 Location HOME(0, 0);
 
 void systick(void) {
@@ -147,6 +147,8 @@ int core(void) {
         mouse.print_plan();
         mouse.home_run();
         if (mouse.start()) {
+          mouse.is_smooth_turn = 0; // return with stability
+          mouse.smooth_only = 0;
           mouse.plan(HOME);
           mouse.print_plan();
           mouse.start();

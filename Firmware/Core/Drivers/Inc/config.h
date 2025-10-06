@@ -29,6 +29,7 @@ extern const int FRONT_LINEAR_CONSTANT;
 extern const int FRONT_REFERENCE;
 extern const int TURN_THRESHOLD_SS90E;
 extern const int EXTRA_WALL_ADJUST;
+extern const int MOUSE_TO_BACK_WALL;
 
 extern const float FULL_CELL;
 extern const float HALF_CELL;

@@ -12,6 +12,7 @@ const int FRONT_LINEAR_CONSTANT = 1030;
 const int FRONT_REFERENCE = 850;
 const int TURN_THRESHOLD_SS90E = 82;
 const int EXTRA_WALL_ADJUST = 5;
+const int MOUSE_TO_BACK_WALL = 26;
 
 const float FULL_CELL = 192.0f;
 const float HALF_CELL = FULL_CELL / 2.0f;
