@@ -15,7 +15,7 @@ uint8_t is_wall_follow = 0;
 uint8_t is_icm_init = 0;
 
 //****************** User Configurable Parameters ***************** */
-Location GOAL(5, 1); // default goal location ********************
+Location GOAL(7, 7); // default goal location ********************
 Location HOME(0, 0);
 
 void systick(void) {
@@ -187,6 +187,10 @@ int core(void) {
         }
 
         if (getRightEncCount() - right_init > 60) {
+          if (mouse.is_smooth_turn) {
+            mouse.smooth_only = 1;
+            LED_Blink(3, 100, 2);
+          }
           mouse.is_smooth_turn = 1;
           right_init = getRightEncCount();
 
@@ -235,9 +239,17 @@ int core(void) {
         icm_initialize();
         is_initialized = 1;
       }
-      print("Search started\n");
-      mouse.search(maze.goal());
-      maze.flood(START);
+
+      is_mouse_enable = 1;
+      drive_enable();
+      LED3_ON;
+      set_steering_mode(STEER_NORMAL);
+      motion.move(FULL_CELL * 8, 2000, 0, 4000);
+      is_mouse_enable = 0;
+      drive_disable();
+      // print("Search started\n");
+      // mouse.search(maze.goal());
+      // maze.flood(START);
       is_run = 0;
     }
 

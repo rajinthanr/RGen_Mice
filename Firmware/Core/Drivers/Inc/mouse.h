@@ -43,6 +43,7 @@ public:
   float target_dis;
   float target_angle;
   uint8_t is_smooth_turn = 0;
+  uint8_t smooth_only = 0;
 
   float linear_speed = 0.0f;
   float angular_speed = 0.0f;
@@ -119,19 +120,22 @@ public:
   }
 
   void turn_smooth_left() {
-    set_steering_mode(STEERING_OFF);
-    if (!maze.is_exit(m_location, m_heading)) {
+    float perimeter = 0.25 * 2.0f * 3.14159f * (SENSING_POSITION - HALF_CELL);
+    float omega = 90 / (perimeter / SEARCH_SPEED); // deg/s
 
-    } else {
-      motion.move(2 * (FULL_CELL - SENSING_POSITION), SEARCH_SPEED,
-                  SEARCH_SPEED, SEARCH_ACCELERATION);
-    }
+    set_steering_mode(STEERING_OFF);
+
+    if (trust_gyro)
+      motion.start_turn(0.0f - (angle - m_angle), omega, omega,
+                        2 * (FULL_CELL - SENSING_POSITION) / SEARCH_SPEED);
+
+    motion.move(2 * (FULL_CELL - SENSING_POSITION), SEARCH_SPEED, SEARCH_SPEED,
+                SEARCH_ACCELERATION);
+
     LED4_OFF;
 
     set_steering_mode(STEERING_OFF);
 
-    float perimeter = 0.25 * 2.0f * 3.14159f * (SENSING_POSITION - HALF_CELL);
-    float omega = 90 / (perimeter / SEARCH_SPEED); // deg/s
     if (trust_gyro)
       motion.start_turn(90.0f - (angle - m_angle), omega, 0, 10000);
     else
@@ -150,19 +154,20 @@ public:
   }
 
   void turn_smooth_right() {
-    set_steering_mode(STEERING_OFF);
-    if (!maze.is_exit(m_location, m_heading)) {
-
-    } else {
-      motion.move(2 * (FULL_CELL - SENSING_POSITION), SEARCH_SPEED,
-                  SEARCH_SPEED, SEARCH_ACCELERATION);
-    }
-    LED4_OFF;
-
-    set_steering_mode(STEERING_OFF);
 
     float perimeter = 0.25 * 2.0f * 3.14159f * (SENSING_POSITION - HALF_CELL);
     float omega = 90 / (perimeter / SEARCH_SPEED); // deg/s
+
+    set_steering_mode(STEERING_OFF);
+
+    if (trust_gyro)
+      motion.start_turn(0.0f - (angle - m_angle), omega, omega,
+                        2 * (FULL_CELL - SENSING_POSITION) / SEARCH_SPEED);
+
+    motion.move(2 * (FULL_CELL - SENSING_POSITION), SEARCH_SPEED, SEARCH_SPEED,
+                SEARCH_ACCELERATION);
+
+    set_steering_mode(STEERING_OFF);
 
     if (trust_gyro)
       motion.start_turn(-90.0f - (angle - m_angle), omega, 0, 10000);
@@ -486,7 +491,8 @@ public:
                     SEARCH_ACCELERATION);
         break;
       }
-
+      if (smooth_only)
+        num_smooths = 0;
       unsigned char hdgChange = (newHeading - m_heading) & 0x3;
       if (m_location != target) {
         print("%d \n", hdgChange);
@@ -617,25 +623,27 @@ public:
     }
 
     for (uint16_t i = 0; i < num_moves; i++) {
+      if (smooth_only)
+        num_smooths = 0;
       switch (mpath[i].direction) {
       case AHEAD: {
         if (i == 0)
           mpath[i].cell_count -= 1;
         float s = mpath[i].cell_count * FULL_CELL / 2;
         float u = SEARCH_SPEED;
-        float v = u * u + 2 * SEARCH_ACCELERATION * s;
+        float v = u * u + 2 * (SEARCH_ACCELERATION)*s;
         v = sqrt(v);
-        v = clamp(v, SEARCH_SPEED, 2.5 * SEARCH_SPEED);
-        motion.start_move(s * 2, v, u, SEARCH_ACCELERATION);
+        v = clamp(v, -1800, 1800);
+        motion.start_move(s * 2 + SENSING_POSITION, v, u, SEARCH_ACCELERATION);
+        set_steering_mode(STEER_NORMAL);
         motion.set_position(SENSING_POSITION);
         for (uint8_t j = 1; j <= mpath[i].cell_count; j++) {
           m_location = m_location.neighbour(m_heading);
           log_action_status('-', ' ', m_location, m_heading);
           print("\n");
           motion.wait_until_position(j * FULL_CELL + HALF_CELL);
-          set_steering_mode(STEERING_OFF);
+          // set_steering_mode(STEERING_OFF);
           motion.wait_until_position(j * FULL_CELL + SENSING_POSITION);
-          set_steering_mode(STEER_NORMAL);
           num_straights++;
         }
       } break;

@@ -94,7 +94,7 @@ float wallFront() {
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-PID wall_theta_pid = {5.0f, 0.0f, 0.05f, 0, 0};
+PID wall_theta_pid = {0.7f, 0.0f, 8.0f, 0, 0};
 
 void wallFollow(bool include_left, bool include_right) {
   float error = 0;

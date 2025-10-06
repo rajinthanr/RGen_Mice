@@ -76,7 +76,7 @@ const float STEERING_KD = 0.0f;
 const float STEERING_ADJUST_LIMIT = 40.0f;
 
 int SEARCH_SPEED = 200;
-const int SEARCH_ACCELERATION = 2000;
+const int SEARCH_ACCELERATION = 3000;
 const int SEARCH_TURN_SPEED = 100;
 const int SMOOTH_TURN_SPEED = 500;
 const int FAST_TURN_SPEED = 600;

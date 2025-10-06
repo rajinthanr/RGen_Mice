@@ -74,6 +74,17 @@ void debug() {
         print("Invalid format for set_goal. Use (x,y)\n");
       }
     }
+
+    else if (strcmp(cmdBuffer, "pd") == 0) {
+      float gx = 0, gy = 0;
+      if (sscanf(valueStr, "%f,%f", &gx, &gy) == 2) {
+        wall_theta_pid.kp = gx;
+        wall_theta_pid.kd = gy;
+        print("PD set to (%.3f, %.3f)\n", gx, gy);
+      } else {
+        print("Invalid format for pd. Use pd=x,y\n");
+      }
+    }
   }
 
   // Single word commands
@@ -285,7 +296,7 @@ void printSouthWalls(int y) {
 
 void print_maze(int style) {
   const char dirChars[] = "^>v<* ";
-  maze.flood(maze.goal());
+  maze.fast_flood(maze.goal());
 
   for (int y = MAZE_HEIGHT - 1; y >= 0; y--) {
     printNorthWalls(y);
